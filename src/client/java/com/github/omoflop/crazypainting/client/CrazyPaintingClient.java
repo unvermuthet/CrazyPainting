@@ -8,9 +8,7 @@ import com.github.omoflop.crazypainting.client.models.easel.EaselEntityModel;
 import com.github.omoflop.crazypainting.client.models.easel.EaselEntityRenderer;
 import com.github.omoflop.crazypainting.client.network.*;
 import com.github.omoflop.crazypainting.content.CrazyEntities;
-import com.github.omoflop.crazypainting.network.s2c.NewPaintingS2CPacket;
-import com.github.omoflop.crazypainting.network.s2c.OpenPaintingS2CPacket;
-import com.github.omoflop.crazypainting.network.s2c.PaintingChangeEventS2C;
+import com.github.omoflop.crazypainting.network.event.PaintingChangeEvent;
 import com.github.omoflop.crazypainting.network.s2c.PaintingUpdateS2C;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -42,9 +40,7 @@ public class CrazyPaintingClient implements ClientModInitializer {
         EntityRendererRegistry.register(CrazyEntities.CANVAS_ENTITY_TYPE, (CanvasEntityRenderer::new));
 
         // Packet receivers
-        ClientPlayNetworking.registerGlobalReceiver(NewPaintingS2CPacket.ID, new NewPaintingHandler());
-        ClientPlayNetworking.registerGlobalReceiver(OpenPaintingS2CPacket.ID, new OpenPaintingHandler());
-        ClientPlayNetworking.registerGlobalReceiver(PaintingChangeEventS2C.ID, new ClientPaintingChangeHandler());
+        ClientPlayNetworking.registerGlobalReceiver(PaintingChangeEvent.ID, new ClientPaintingChangeHandler());
         ClientPlayNetworking.registerGlobalReceiver(PaintingUpdateS2C.ID, new PaintingUpdateHandler());
     }
 

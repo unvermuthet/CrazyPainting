@@ -6,7 +6,6 @@ import com.github.omoflop.crazypainting.client.CanvasTextureManager;
 import com.github.omoflop.crazypainting.entities.EaselEntity;
 import com.github.omoflop.crazypainting.items.CanvasItem;
 import com.github.omoflop.crazypainting.items.PaletteItem;
-import com.github.omoflop.crazypainting.network.old.c2s.SendPaintingC2SPacket;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -179,7 +178,7 @@ public class PaintingEditorScreen extends Screen {
 
         if (canvasTexture != null && (button == 0 || button == 1)) {
             canvasTexture.updateTexture();
-            ClientPlayNetworking.send(new SendPaintingC2SPacket(easel.getId(), CanvasTextureManager.getVersion(canvasId), false, canvasTexture.pixels));
+           // ClientPlayNetworking.send(new SendPaintingC2SPacket(easel.getId(), CanvasTextureManager.getVersion(canvasId), false, canvasTexture.pixels));
         }
 
         return super.mouseReleased(mouseX, mouseY, button);

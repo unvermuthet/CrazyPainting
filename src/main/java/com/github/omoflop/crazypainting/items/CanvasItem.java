@@ -6,6 +6,8 @@ import com.github.omoflop.crazypainting.components.CanvasDataComponent;
 import com.github.omoflop.crazypainting.content.CrazyComponents;
 import com.github.omoflop.crazypainting.content.CrazyEntities;
 import com.github.omoflop.crazypainting.entities.CanvasEntity;
+import com.github.omoflop.crazypainting.network.types.PaintingData;
+import com.github.omoflop.crazypainting.network.types.PaintingSize;
 import net.minecraft.block.SideShapeType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
@@ -115,6 +117,10 @@ public class CanvasItem extends Item implements Identifiable {
         }
 
         stack.set(CrazyComponents.CANVAS_DATA, new CanvasDataComponent(previousData.id(), previousData.glow(), signer.toString()));
+    }
+
+    public PaintingSize getSize() {
+        return new PaintingSize(width, height);
     }
 
     public static boolean isSigned(ItemStack heldStack) {

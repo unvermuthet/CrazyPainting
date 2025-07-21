@@ -1,5 +1,6 @@
 package com.github.omoflop.crazypainting.network.types;
 
+import com.github.omoflop.crazypainting.content.CrazyNetworking;
 import net.minecraft.network.PacketByteBuf;
 
 import javax.imageio.ImageIO;
@@ -9,13 +10,13 @@ import java.io.IOException;
 
 public record PaintingData(byte[] data, PaintingSize size) {
     public void writeTo(PacketByteBuf buf) {
-        buf.writeBytes(data);
+        CrazyNetworking.writeByteArray(buf, data);
         size.writeTo(buf);
     }
 
     public static PaintingData readFrom(PacketByteBuf buf) {
         return new PaintingData(
-                buf.readByteArray(),
+                CrazyNetworking.readByteArray(buf),
                 PaintingSize.readFrom(buf)
         );
     }

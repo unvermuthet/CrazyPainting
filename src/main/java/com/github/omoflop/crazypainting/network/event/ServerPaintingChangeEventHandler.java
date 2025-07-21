@@ -1,6 +1,5 @@
-package com.github.omoflop.crazypainting.network.c2s.handlers;
+package com.github.omoflop.crazypainting.network.event;
 
-import com.github.omoflop.crazypainting.network.c2s.PaintingChangeEventC2S;
 import com.github.omoflop.crazypainting.state.CanvasManager;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.MinecraftServer;
@@ -9,9 +8,9 @@ import net.minecraft.server.world.ServerWorld;
 
 import java.util.Objects;
 
-public class PaintingChangeEventServerHandler implements ServerPlayNetworking.PlayPayloadHandler<PaintingChangeEventC2S> {
+public class ServerPaintingChangeEventHandler implements ServerPlayNetworking.PlayPayloadHandler<PaintingChangeEvent> {
     @Override
-    public void receive(PaintingChangeEventC2S packet, ServerPlayNetworking.Context ctx) {
+    public void receive(PaintingChangeEvent packet, ServerPlayNetworking.Context ctx) {
         ServerPlayerEntity player = ctx.player();
         ServerWorld world = player.getWorld();
         MinecraftServer server = Objects.requireNonNull(player.getServer());

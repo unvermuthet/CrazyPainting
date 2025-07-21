@@ -6,9 +6,9 @@ import com.github.omoflop.crazypainting.content.CrazyComponents;
 import com.github.omoflop.crazypainting.content.CrazyItems;
 import com.github.omoflop.crazypainting.items.CanvasItem;
 import com.github.omoflop.crazypainting.items.PaletteItem;
-import com.github.omoflop.crazypainting.network.types.PaintingSize;
-import com.github.omoflop.crazypainting.network.s2c.OpenPaintingS2CPacket;
-import com.github.omoflop.crazypainting.network.s2c.NewPaintingS2CPacket;
+import com.github.omoflop.crazypainting.network.event.PaintingChangeEvent;
+import com.github.omoflop.crazypainting.network.types.ChangeId;
+import com.github.omoflop.crazypainting.network.types.PaintingData;
 import com.github.omoflop.crazypainting.state.CanvasManager;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
@@ -21,6 +21,9 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -30,6 +33,8 @@ import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Arm;
@@ -38,10 +43,13 @@ import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 
+import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 
 
 public class EaselEntity extends LivingEntity {
+    public static final TrackedData<ItemStack> CANVAS_ITEM = DataTracker.registerData(EaselEntity.class, TrackedDataHandlerRegistry.ITEM_STACK);
 
     public long lastHitTime;
 
@@ -56,23 +64,31 @@ public class EaselEntity extends LivingEntity {
     }
 
     @Override
+    protected void initDataTracker(DataTracker.Builder builder) {
+        builder.add(CANVAS_ITEM, ItemStack.EMPTY);
+        super.initDataTracker(builder);
+    }
+
+    @Override
     public ActionResult interact(PlayerEntity player, Hand hand) {
         if (hand == Hand.OFF_HAND) return ActionResult.PASS;
 
-        ItemStack heldStack = this.getStackInHand(Hand.MAIN_HAND);
+        ItemStack displayStack = this.getDisplayStack();
         ItemStack playerHeldStack = player.getStackInHand(hand);
         boolean hasPaletteInEitherHand =
                 player.getStackInHand(Hand.MAIN_HAND).getItem() instanceof PaletteItem ||
                 player.getStackInHand(Hand.OFF_HAND).getItem() instanceof PaletteItem;
 
-        boolean itemIsCanvas = heldStack.getItem() instanceof CanvasItem;
+        boolean itemIsCanvas = displayStack.getItem() instanceof CanvasItem;
+
+        if (displayStack.isEmpty() && playerHeldStack.isEmpty()) return ActionResult.FAIL;
 
         if (itemIsCanvas) {
             boolean holdingGlowItem = playerHeldStack.getItem() == CrazyPainting.GLOW_ITEM;
             boolean holdingUnGlowItem = playerHeldStack.getItem() == CrazyPainting.UNGLOW_ITEM;
 
             if (holdingGlowItem || holdingUnGlowItem) {
-                CanvasDataComponent data = heldStack.get(CrazyComponents.CANVAS_DATA);
+                CanvasDataComponent data = displayStack.get(CrazyComponents.CANVAS_DATA);
 
                 boolean success = false;
                 if (data == null) {
@@ -84,53 +100,55 @@ public class EaselEntity extends LivingEntity {
                 }
 
                 if (success) {
-                    heldStack.set(CrazyComponents.CANVAS_DATA, data);
+                    displayStack.set(CrazyComponents.CANVAS_DATA, data);
                     player.playSound(holdingGlowItem ? SoundEvents.ITEM_GLOW_INK_SAC_USE : SoundEvents.ITEM_INK_SAC_USE);
                     playerHeldStack.decrementUnlessCreative(1, player);
                     return ActionResult.SUCCESS;
                 }
             }
-
-
-        }
-        if (itemIsCanvas && heldStack.getItem() == CrazyPainting.UNGLOW_ITEM) {
-
         }
 
-        if (heldStack.isEmpty()) {
+        if (displayStack.isEmpty()) {
             if (!playerHeldStack.isEmpty()) {
-                this.setStackInHand(Hand.MAIN_HAND, playerHeldStack);
+                setDisplayStack(playerHeldStack);
                 player.setStackInHand(hand, ItemStack.EMPTY);
             }
         } else if (!itemIsCanvas || player.isSneaking()) {
             if (hand == Hand.MAIN_HAND && playerHeldStack.isEmpty()) {
-                player.setStackInHand(hand, heldStack);
-                this.setStackInHand(Hand.MAIN_HAND, ItemStack.EMPTY);
+                player.setStackInHand(hand, displayStack);
+                setDisplayStack(ItemStack.EMPTY);
             }
-        } else if (heldStack.getItem() instanceof CanvasItem canvasItem) {
+        } else if (displayStack.getItem() instanceof CanvasItem canvasItem) {
             if (!(player instanceof ServerPlayerEntity serverPlayer)) return ActionResult.SUCCESS;
 
-            if (CanvasItem.getCanvasId(heldStack) == -1 && hasPaletteInEitherHand) {
-                int newId = CanvasManager.getServerState(Objects.requireNonNull(serverPlayer.getServer())).getNextId();
-                ServerPlayNetworking.send(serverPlayer, new NewPaintingS2CPacket(this.getId(), newId, PaintingSize.from(canvasItem)));
-                CanvasItem.setId(heldStack, newId);
+            // TODO: Stuff
 
-                return ActionResult.SUCCESS;
+            boolean edit = hasPaletteInEitherHand;
+            if (CanvasItem.isSigned(displayStack)) edit = false;
+
+            int canvasId = CanvasItem.getCanvasId(displayStack);
+            if (canvasId == -1 && hasPaletteInEitherHand) {
+                canvasId = CanvasManager.getServerState(Objects.requireNonNull(serverPlayer.getServer())).getNextId();
+                CanvasItem.setId(displayStack, canvasId);
+                edit = true;
             }
 
-            // Open the editor GUI when a palette is held unless the painting is signed, otherwise open the viewer gui
-            boolean edit = hasPaletteInEitherHand;
-            if (CanvasItem.isSigned(heldStack)) edit = false;
+            Optional<ChangeId> change = Optional.empty();
+            if (edit) {
+                change = Optional.of(ChangeId.create(canvasId));
+                CanvasManager.CHANGE_IDS.put(serverPlayer.getUuid(), change.get());
+            }
 
-            ServerPlayNetworking.send(serverPlayer, new OpenPaintingS2CPacket(this.getId(), edit));
+            try {
+                PaintingChangeEvent changeEvent = new PaintingChangeEvent(change, CanvasManager.createOrLoad(canvasId, canvasItem.getSize(), Objects.requireNonNull(serverPlayer.getServer())));
+                ServerPlayNetworking.send(serverPlayer, changeEvent);
+            } catch (IOException ignored) {
+
+            }
         }
 
 
         return super.interact(player, hand);
-    }
-
-    public boolean canUseSlot(EquipmentSlot slot) {
-        return slot == EquipmentSlot.MAINHAND;
     }
 
     @Override
@@ -240,7 +258,6 @@ public class EaselEntity extends LivingEntity {
         } else {
             super.handleStatus(status);
         }
-
     }
 
     public boolean shouldRender(double distance) {
@@ -295,5 +312,39 @@ public class EaselEntity extends LivingEntity {
 
     private void playBreakSound() {
         this.getWorld().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.ENTITY_ARMOR_STAND_BREAK, this.getSoundCategory(), 1.0F, 1.0F);
+    }
+
+    public ItemStack getDisplayStack() {
+        return dataTracker.get(CANVAS_ITEM);
+    }
+
+    public void setDisplayStack(ItemStack value) {
+        if (!value.isEmpty()) {
+            value = value.copyWithCount(1);
+        }
+
+        this.setAsStackHolder(value);
+        this.getDataTracker().set(CANVAS_ITEM, value);
+    }
+
+    private void setAsStackHolder(ItemStack stack) {
+        if (!stack.isEmpty() && stack.getFrame() == null) {
+            stack.setHolder(this);
+        }
+    }
+
+    protected void writeCustomData(WriteView view) {
+        super.writeCustomData(view);
+        ItemStack itemStack = this.getDisplayStack();
+        if (!itemStack.isEmpty()) {
+            view.put("Item", ItemStack.CODEC, itemStack);
+        }
+    }
+
+    protected void readCustomData(ReadView view) {
+        super.readCustomData(view);
+        ItemStack itemStack = view.read("Item", ItemStack.CODEC).orElse(ItemStack.EMPTY);
+
+        this.setDisplayStack(itemStack);
     }
 }

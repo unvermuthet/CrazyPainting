@@ -2,6 +2,7 @@ package com.github.omoflop.crazypainting.client.models.canvas;
 
 import com.github.omoflop.crazypainting.entities.CanvasEntity;
 import com.github.omoflop.crazypainting.items.CanvasItem;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.ItemModelManager;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -57,7 +58,11 @@ public class CanvasEntityRenderer extends EntityRenderer<CanvasEntity, CanvasEnt
         }
         matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(f));
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(g));
-        matrices.translate(0,0,1.2/16f);
+
+        double distance = MinecraftClient.getInstance().cameraEntity.squaredDistanceTo(state.x, state.y, state.z);
+
+
+        matrices.translate(0,0, Math.min(32f/distance, 1.38/16f));
 
         // undo ui shrink lol
         int biggest = Math.max(canvas.width, canvas.height);
@@ -65,6 +70,8 @@ public class CanvasEntityRenderer extends EntityRenderer<CanvasEntity, CanvasEnt
 
         // Rotate!
         matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(state.rotation*90));
+
+        float scale = 1.03f;
 
         state.displayItemState.render(matrices, vertexConsumers, light, OverlayTexture.DEFAULT_UV);
         matrices.pop();

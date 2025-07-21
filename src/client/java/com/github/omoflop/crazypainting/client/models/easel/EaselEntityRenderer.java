@@ -35,8 +35,8 @@ public class EaselEntityRenderer extends LivingEntityRenderer<EaselEntity, Easel
         super.updateRenderState(entity, state, tickProgress);
         state.yaw = MathHelper.lerpAngleDegrees(tickProgress, entity.lastYaw, entity.getYaw());
         state.timeSinceLastHit = (float)(entity.getWorld().getTime() - entity.lastHitTime) + tickProgress;
-        state.displayItem = entity.getStackInHand(Hand.MAIN_HAND);
-        this.itemModelResolver.updateForLivingEntity(state.displayItemState, entity.getStackInArm(Arm.RIGHT), ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, entity);
+        state.displayItem = entity.getDisplayStack();
+        this.itemModelResolver.updateForLivingEntity(state.displayItemState, state.displayItem, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, entity);
     }
 
     @Override

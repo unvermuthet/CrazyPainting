@@ -17,7 +17,7 @@ public class PaletteItem extends Item implements Identifiable {
     public final Identifier id;
 
     public PaletteItem(String registryName) {
-        super(new Settings().maxCount(1).registryKey(Identifiable.key(registryName)));
+        super(new Settings().maxCount(1).registryKey(Identifiable.key(registryName)).useCooldown(0.25f));
         this.id = CrazyPainting.id(registryName);
     }
 

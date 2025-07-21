@@ -38,6 +38,9 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    implementation 'me.saharnooby:qoi-java:1.2.1'
+    implementation 'me.saharnooby:qoi-java-awt:1.2.1'
 }
 
 processResources {
