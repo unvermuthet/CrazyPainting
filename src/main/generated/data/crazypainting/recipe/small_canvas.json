@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "/": "minecraft:stick",
+    "p": "minecraft:paper"
+  },
+  "pattern": [
+    "///",
+    "/p/",
+    "///"
+  ],
+  "result": {
+    "count": 1,
+    "id": "crazypainting:small_canvas"
+  }
+}

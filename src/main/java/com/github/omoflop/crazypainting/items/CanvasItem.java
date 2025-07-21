@@ -1,0 +1,128 @@
+package com.github.omoflop.crazypainting.items;
+
+import com.github.omoflop.crazypainting.CrazyPainting;
+import com.github.omoflop.crazypainting.Identifiable;
+import com.github.omoflop.crazypainting.components.CanvasDataComponent;
+import com.github.omoflop.crazypainting.content.CrazyComponents;
+import com.github.omoflop.crazypainting.content.CrazyEntities;
+import com.github.omoflop.crazypainting.entities.CanvasEntity;
+import net.minecraft.block.SideShapeType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
+import net.minecraft.item.DecorationItem;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.World;
+import org.apache.commons.lang3.Validate;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.UUID;
+
+
+public class CanvasItem extends Item implements Identifiable {
+    public final Identifier id;
+
+    public final byte width;
+    public final byte height;
+
+    public CanvasItem(String registryName, byte width, byte height) {
+        super(new Settings().maxCount(1).registryKey(Identifiable.key(registryName)).component(DataComponentTypes.LORE, new LoreComponent(List.of(), List.of(Text.literal(width + "x" + height).formatted(Formatting.WHITE)))));
+        this.id = CrazyPainting.id(registryName);
+        this.width = width;
+        this.height = height;
+
+    }
+
+    @Override
+    public ActionResult useOnBlock(ItemUsageContext context) {
+        Direction side = context.getSide();
+        BlockPos pos = context.getBlockPos();
+        World world = context.getWorld();
+        ItemStack usageStack = context.getStack();
+
+        boolean mayPlace = world.getBlockState(pos).isSideSolid(world, pos, side, SideShapeType.CENTER);
+        if (!mayPlace) return ActionResult.PASS;
+
+        ItemStack stack = usageStack.copyComponentsToNewStack(usageStack.getItem(), 1);
+
+        CanvasEntity entity = CanvasEntity.create(world, stack, pos.add(side.getVector()), side);
+        world.spawnEntity(entity);
+
+        context.getStack().decrementUnlessCreative(1, context.getPlayer());
+        return ActionResult.SUCCESS;
+    }
+
+
+    public static int getCanvasId(ItemStack stack) {
+        if (!stack.hasChangedComponent(CrazyComponents.CANVAS_DATA)) return -1;
+        var component = stack.getComponents().get(CrazyComponents.CANVAS_DATA);
+        if (component == null) return -1;
+        return component.id();
+    }
+
+    public static boolean getGlow(ItemStack stack) {
+        if (!stack.hasChangedComponent(CrazyComponents.CANVAS_DATA)) return false;
+        var component = stack.getComponents().get(CrazyComponents.CANVAS_DATA);
+        if (component == null) return false;
+        return component.glow();
+    }
+
+    public static @Nullable UUID getSignedBy(ItemStack stack) {
+        if (!stack.hasChangedComponent(CrazyComponents.CANVAS_DATA)) return null;
+
+        var component = stack.getComponents().get(CrazyComponents.CANVAS_DATA);
+        if (component == null) return null;
+
+        String signedBy = component.signedBy();
+        if (signedBy.isEmpty()) return null;
+
+        return UUID.fromString(signedBy);
+    }
+
+    public static void setId(ItemStack stack, int id) {
+        CanvasDataComponent previousData = CanvasDataComponent.DEFAULT;
+        if (stack.hasChangedComponent(CrazyComponents.CANVAS_DATA)) {
+            previousData = stack.get(CrazyComponents.CANVAS_DATA);
+            assert previousData != null;
+        }
+
+        stack.set(CrazyComponents.CANVAS_DATA, new CanvasDataComponent(id, previousData.glow(), previousData.signedBy()));
+    }
+
+    public static void setGlow(ItemStack stack, boolean glow) {
+        CanvasDataComponent previousData = CanvasDataComponent.DEFAULT;
+        if (stack.hasChangedComponent(CrazyComponents.CANVAS_DATA)) {
+            previousData = stack.get(CrazyComponents.CANVAS_DATA);
+            assert previousData != null;
+        }
+
+        stack.set(CrazyComponents.CANVAS_DATA, new CanvasDataComponent(previousData.id(), glow, previousData.signedBy()));
+    }
+
+    public static void setSignedBy(ItemStack stack, UUID signer) {
+        CanvasDataComponent previousData = CanvasDataComponent.DEFAULT;
+        if (stack.hasChangedComponent(CrazyComponents.CANVAS_DATA)) {
+            previousData = stack.get(CrazyComponents.CANVAS_DATA);
+            assert previousData != null;
+        }
+
+        stack.set(CrazyComponents.CANVAS_DATA, new CanvasDataComponent(previousData.id(), previousData.glow(), signer.toString()));
+    }
+
+    public static boolean isSigned(ItemStack heldStack) {
+        return getSignedBy(heldStack) != null;
+    }
+
+    @Override
+    public Identifier getId() {
+        return id;
+    }
+}

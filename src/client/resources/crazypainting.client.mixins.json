@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.github.omoflop.crazypainting.client.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "SpecialItemModelMixin",
+    "TextureManagerAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}

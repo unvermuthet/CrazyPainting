@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "crazypainting:item/big_canvas_painted"
+  }
+}

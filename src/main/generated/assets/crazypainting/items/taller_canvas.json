@@ -1,0 +1,31 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "component": "crazypainting:canvas_data",
+    "on_false": {
+      "type": "minecraft:model",
+      "model": "crazypainting:item/taller_canvas"
+    },
+    "on_true": {
+      "type": "minecraft:select",
+      "cases": [
+        {
+          "model": {
+            "type": "minecraft:model",
+            "model": "crazypainting:item/taller_canvas_painted"
+          },
+          "when": "ground"
+        }
+      ],
+      "fallback": {
+        "type": "minecraft:special",
+        "base": "crazypainting:item/taller_canvas_painted",
+        "model": {
+          "type": "crazypainting:canvas"
+        }
+      },
+      "property": "minecraft:display_context"
+    },
+    "property": "minecraft:has_component"
+  }
+}

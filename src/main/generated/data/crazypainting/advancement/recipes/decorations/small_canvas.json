@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_palette": {
+      "conditions": {
+        "items": [
+          {
+            "items": "crazypainting:palette"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "crazypainting:small_canvas"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_palette"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "crazypainting:small_canvas"
+    ]
+  }
+}

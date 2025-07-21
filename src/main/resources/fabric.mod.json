@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "crazypainting",
+  "version": "${version}",
+  "name": "CrazyPainting",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/crazypainting/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": [
+      "com.github.omoflop.crazypainting.client.CrazyPaintingDataGenerator"
+    ],
+    "client": [
+      "com.github.omoflop.crazypainting.client.CrazyPaintingClient"
+    ],
+    "main": [
+      "com.github.omoflop.crazypainting.CrazyPainting"
+    ]
+  },
+  "mixins": [
+    "crazypainting.mixins.json",
+    {
+      "config": "crazypainting.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}

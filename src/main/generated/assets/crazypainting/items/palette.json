@@ -1,0 +1,15 @@
+{
+  "model": {
+    "type": "minecraft:condition",
+    "at_least": 1,
+    "on_false": {
+      "type": "minecraft:model",
+      "model": "crazypainting:item/palette"
+    },
+    "on_true": {
+      "type": "minecraft:model",
+      "model": "crazypainting:item/palette_filled"
+    },
+    "property": "crazypainting:palette_has_colors"
+  }
+}
