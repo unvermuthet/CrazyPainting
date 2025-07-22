@@ -31,7 +31,7 @@ public class CanvasManager extends PersistentState {
 
     public static final HashMap<UUID, ChangeRecord> CHANGE_IDS = new HashMap<>();
 
-    private int nextId = -1;
+    private int nextId;
 
     public CanvasManager(int nextId) {
         this.nextId = nextId;
@@ -52,7 +52,8 @@ public class CanvasManager extends PersistentState {
         if (bytes.isEmpty()) return null;
 
         BufferedImage img = ImageIO.read(paintingPath.toFile());
-        PaintingSize size = PaintingSize.fromPixels(img.getWidth() / 16, img.getHeight() / 16);
+        System.out.printf("Loaded painting id: %s of size %s x %s%n", canvasId, img.getWidth(), img.getHeight());
+        PaintingSize size = PaintingSize.fromPixels(img.getWidth(), img.getHeight());
         return new PaintingData(bytes.get(), size, new PaintingId(canvasId));
 
     }

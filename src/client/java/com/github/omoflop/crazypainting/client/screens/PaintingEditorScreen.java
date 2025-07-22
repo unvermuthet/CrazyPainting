@@ -2,7 +2,6 @@ package com.github.omoflop.crazypainting.client.screens;
 
 import com.github.omoflop.crazypainting.CrazyPainting;
 import com.github.omoflop.crazypainting.client.CanvasTexture;
-import com.github.omoflop.crazypainting.client.CanvasTextureManager;
 import com.github.omoflop.crazypainting.items.PaletteItem;
 import com.github.omoflop.crazypainting.network.event.PaintingChangeEvent;
 import com.github.omoflop.crazypainting.network.types.ChangeKey;
@@ -22,7 +21,6 @@ import net.minecraft.util.Identifier;
 import org.apache.logging.log4j.Level;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.Arrays;
 import java.util.Optional;
 
 import static com.github.omoflop.crazypainting.CrazyPainting.LOGGER;
@@ -31,11 +29,11 @@ import static com.github.omoflop.crazypainting.CrazyPainting.LOGGER;
 public class PaintingEditorScreen extends Screen {
     private static Identifier EDITOR_TEXTURE_ID = CrazyPainting.id("textures/gui/editor.png");
     private static final int PALETTE_DISPLAY_SIZE = 12;
-    private static int lastSelectedColor;
+    private static int lastSelectedColor = CrazyPainting.BLACK;
 
     private CanvasTexture canvasTexture = null;
 
-    private int pixelSize = 1;
+    private final int pixelSize;
 
     private int selectedColor = -1;
     private String paintingTitle;
@@ -49,7 +47,7 @@ public class PaintingEditorScreen extends Screen {
 
     private int updateCooldown = 20;
     private boolean hasChanges = false;
-    private final Optional<ChangeKey> changeKey;
+    private final Optional<ChangeKey> key;
 
     public PaintingEditorScreen(PaintingChangeEvent event, CanvasTexture texture) {
         super(Text.translatable("gui.crazypainting.painting_editor.title"));
@@ -57,13 +55,15 @@ public class PaintingEditorScreen extends Screen {
 
         paintingTitle = event.title();
         canvasTexture = texture;
-        changeKey = event.change();
+        key = event.change();
+        pixelSize = (int)Math.max(1, 10.0f / (Math.max(canvasTexture.width/16, canvasTexture.height/16)));
 
         if (client == null || client.player == null) {
             close();
             return;
         }
         paletteStack = client.player.getStackInHand(Hand.MAIN_HAND);
+
     }
 
     @Override
@@ -207,7 +207,7 @@ public class PaintingEditorScreen extends Screen {
 
                 PaintingData data = canvasTexture.toData();
                 if (data != null)
-                    ClientPlayNetworking.send(new PaintingChangeEvent(changeKey, data, paintingTitle));
+                    ClientPlayNetworking.send(new PaintingChangeEvent(key, data, paintingTitle));
                 else
                     LOGGER.log(Level.ALL, "Failed to send painting change update packet");
             }
@@ -222,22 +222,15 @@ public class PaintingEditorScreen extends Screen {
                 selectedColor = this.colors[0];
             }
         }
-
-        if (canvasTexture == null) {
-            var optional = CanvasTextureManager.request(canvasId);
-
-            if (optional.isPresent()) {
-                canvasTexture = optional.get();
-                pixelSize = (int)Math.max(1, 10.0f / (Math.max(canvasTexture.width/16, canvasTexture.height/16)));
-            }
-        }
-
-
     }
 
     @Override
     public void close() {
         super.close();
+        PaintingData data = canvasTexture.toData();
+        if (data != null)
+            ClientPlayNetworking.send(new PaintingChangeEvent(key, data, paintingTitle));
+
         client.mouse.lockCursor();
     }
 }

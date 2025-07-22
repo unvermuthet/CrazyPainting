@@ -61,6 +61,10 @@ public class CanvasTexture implements AutoCloseable {
             Arrays.fill(pixels, CrazyPainting.WHITE);
         }
 
+        if (width == 0 || height == 0) {
+            throw new RuntimeException("Image cannot be width or height of 0!");
+        }
+
         this.editable = editable;
         nativeImage = new NativeImage(width, height, true);
         glTexture = new NativeImageBackedTexture(textureId::toString, nativeImage);

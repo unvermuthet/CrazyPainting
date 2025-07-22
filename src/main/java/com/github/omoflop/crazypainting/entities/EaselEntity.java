@@ -7,6 +7,7 @@ import com.github.omoflop.crazypainting.content.CrazyItems;
 import com.github.omoflop.crazypainting.items.CanvasItem;
 import com.github.omoflop.crazypainting.items.PaletteItem;
 import com.github.omoflop.crazypainting.network.event.PaintingChangeEvent;
+import com.github.omoflop.crazypainting.network.s2c.UpdateEaselCanvasIdS2C;
 import com.github.omoflop.crazypainting.network.types.ChangeKey;
 import com.github.omoflop.crazypainting.network.ChangeRecord;
 import com.github.omoflop.crazypainting.network.types.PaintingId;
@@ -147,6 +148,10 @@ public class EaselEntity extends LivingEntity {
                 MinecraftServer server = Objects.requireNonNull(serverPlayer.getServer());
                 PaintingChangeEvent changeEvent = new PaintingChangeEvent(change, CanvasManager.createOrLoad(canvasId, canvasItem.getSize(), server), CanvasItem.getTitle(displayStack));
                 ServerPlayNetworking.send(serverPlayer, changeEvent);
+                ServerPlayNetworking.send(serverPlayer, new UpdateEaselCanvasIdS2C(this.getId(), new PaintingId(canvasId)));
+
+
+
             } catch (IOException ignored) {
 
             }

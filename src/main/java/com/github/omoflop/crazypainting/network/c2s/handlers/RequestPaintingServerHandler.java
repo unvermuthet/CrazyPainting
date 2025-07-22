@@ -2,13 +2,12 @@ package com.github.omoflop.crazypainting.network.c2s.handlers;
 
 import com.github.omoflop.crazypainting.CrazyPainting;
 import com.github.omoflop.crazypainting.network.c2s.RequestPaintingC2S;
-import com.github.omoflop.crazypainting.network.event.PaintingChangeEvent;
+import com.github.omoflop.crazypainting.network.s2c.PaintingUpdateS2C;
 import com.github.omoflop.crazypainting.network.types.PaintingData;
 import com.github.omoflop.crazypainting.state.CanvasManager;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import org.apache.logging.log4j.Level;
 
 import java.io.IOException;
@@ -30,7 +29,8 @@ public class RequestPaintingServerHandler implements ServerPlayNetworking.PlayPa
             return;
         }
 
-        ServerPlayNetworking.send(player, new PaintingChangeEvent());
+        System.out.println("Sending client painting of size: " + data.size().toString());
+        ServerPlayNetworking.send(player, new PaintingUpdateS2C(packet.id(), data));
 
     }
 }

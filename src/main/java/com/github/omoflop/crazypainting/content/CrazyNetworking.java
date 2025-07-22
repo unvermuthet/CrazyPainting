@@ -1,6 +1,7 @@
 package com.github.omoflop.crazypainting.content;
 
 import com.github.omoflop.crazypainting.network.s2c.PaintingCanUpdateS2C;
+import com.github.omoflop.crazypainting.network.s2c.UpdateEaselCanvasIdS2C;
 import com.github.omoflop.crazypainting.network.types.PaintingData;
 import com.github.omoflop.crazypainting.network.types.PaintingSize;
 import com.github.omoflop.crazypainting.network.event.PaintingChangeEvent;
@@ -27,6 +28,7 @@ public class CrazyNetworking {
         PayloadTypeRegistry.playS2C().register(PaintingChangeEvent.ID, PaintingChangeEvent.CODEC);
         PayloadTypeRegistry.playS2C().register(PaintingUpdateS2C.ID, PaintingUpdateS2C.CODEC);
         PayloadTypeRegistry.playS2C().register(PaintingCanUpdateS2C.ID, PaintingCanUpdateS2C.CODEC);
+        PayloadTypeRegistry.playS2C().register(UpdateEaselCanvasIdS2C.ID, UpdateEaselCanvasIdS2C.CODEC);
 
         // Client -> Server
         PayloadTypeRegistry.playC2S().register(PaintingChangeEvent.ID, PaintingChangeEvent.CODEC);

@@ -4,6 +4,7 @@
   "package": "com.github.omoflop.crazypainting.client.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "MinecraftClientMixin",
     "SpecialItemModelMixin",
     "TextureManagerAccessor"
   ],

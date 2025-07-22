@@ -16,6 +16,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.ParsedSelector;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -30,6 +31,12 @@ public record CanvasDataComponent(int id, boolean glow, String signedBy, String 
     ).apply(builder, CanvasDataComponent::new));
 
     public static final CanvasDataComponent DEFAULT = new CanvasDataComponent(-1, false, "", CanvasItem.UNTITLED);
+
+
+    public static CanvasDataComponent withId(@Nullable CanvasDataComponent data, int id) {
+        if (data == null) data = DEFAULT;
+        return new CanvasDataComponent(id, data.glow, data.signedBy, data.title);
+    }
 
     public CanvasDataComponent withId(int id) {
         return new CanvasDataComponent(id, glow, signedBy, title);
