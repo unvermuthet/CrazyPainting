@@ -3,9 +3,10 @@ package com.github.omoflop.crazypainting.client.screens;
 import com.github.omoflop.crazypainting.CrazyPainting;
 import com.github.omoflop.crazypainting.client.CanvasTexture;
 import com.github.omoflop.crazypainting.client.CanvasTextureManager;
-import com.github.omoflop.crazypainting.entities.EaselEntity;
-import com.github.omoflop.crazypainting.items.CanvasItem;
 import com.github.omoflop.crazypainting.items.PaletteItem;
+import com.github.omoflop.crazypainting.network.event.PaintingChangeEvent;
+import com.github.omoflop.crazypainting.network.types.ChangeKey;
+import com.github.omoflop.crazypainting.network.types.PaintingData;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -13,13 +14,18 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import org.apache.logging.log4j.Level;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.Arrays;
+import java.util.Optional;
+
+import static com.github.omoflop.crazypainting.CrazyPainting.LOGGER;
 
 @Environment(EnvType.CLIENT)
 public class PaintingEditorScreen extends Screen {
@@ -27,13 +33,12 @@ public class PaintingEditorScreen extends Screen {
     private static final int PALETTE_DISPLAY_SIZE = 12;
     private static int lastSelectedColor;
 
-    private final EaselEntity easel;
     private CanvasTexture canvasTexture = null;
 
     private int pixelSize = 1;
 
     private int selectedColor = -1;
-    private String canvasName;
+    private String paintingTitle;
 
     private boolean leftMouseDown;
     private boolean rightMouseDown;
@@ -42,21 +47,17 @@ public class PaintingEditorScreen extends Screen {
     private int[] colors;
     private int canvasId;
 
-    public PaintingEditorScreen(EaselEntity easel) {
+    private int updateCooldown = 20;
+    private boolean hasChanges = false;
+    private final Optional<ChangeKey> changeKey;
+
+    public PaintingEditorScreen(PaintingChangeEvent event, CanvasTexture texture) {
         super(Text.translatable("gui.crazypainting.painting_editor.title"));
         this.client = MinecraftClient.getInstance();
-        this.easel = easel;
 
-        ItemStack stack = easel.getEquippedStack(EquipmentSlot.MAINHAND);
-        canvasId = CanvasItem.getCanvasId(stack);
-
-
-        Text customName = stack.getCustomName();
-        if (customName == null) {
-            canvasName = "Untitled Painting";
-        } else {
-            canvasName = customName.getString();
-        }
+        paintingTitle = event.title();
+        canvasTexture = texture;
+        changeKey = event.change();
 
         if (client == null || client.player == null) {
             close();
@@ -84,7 +85,7 @@ public class PaintingEditorScreen extends Screen {
         int canvasY = canvasPixelY * pixelSize;
 
         // Draw Title
-        context.drawCenteredTextWithShadow(textRenderer, Text.literal(canvasName), width / 2, 64, CrazyPainting.YELLOW);
+        context.drawCenteredTextWithShadow(textRenderer, Text.literal(paintingTitle), width / 2, 64, CrazyPainting.YELLOW);
 
         for(int i = 0; i < canvasTexture.pixels.length; i++) {
             int drawX = canvasX + (i % canvasTexture.width) * pixelSize;
@@ -186,6 +187,7 @@ public class PaintingEditorScreen extends Screen {
 
     public void setPixel(int x, int y, int color) {
         canvasTexture.pixels[x + y * canvasTexture.width] = color;
+        hasChanges = true;
     }
 
     public int getPixel(int x, int y) {
@@ -195,6 +197,21 @@ public class PaintingEditorScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
+
+
+        if (hasChanges) {
+            updateCooldown -= 1;
+            if (updateCooldown <= 0) {
+                updateCooldown = 20;
+                hasChanges = false;
+
+                PaintingData data = canvasTexture.toData();
+                if (data != null)
+                    ClientPlayNetworking.send(new PaintingChangeEvent(changeKey, data, paintingTitle));
+                else
+                    LOGGER.log(Level.ALL, "Failed to send painting change update packet");
+            }
+        }
 
         var colors = PaletteItem.getColors(paletteStack);
         if (!colors.isEmpty()) {

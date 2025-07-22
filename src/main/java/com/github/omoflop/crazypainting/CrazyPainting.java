@@ -5,10 +5,15 @@ import net.fabricmc.api.ModInitializer;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 
 public class CrazyPainting implements ModInitializer {
+    public static final Logger LOGGER = LogManager.getLogger("crazy_painting");
+    public static final boolean SHOW_NETWORK_LOGS = true;
+
     public static final Item GLOW_ITEM = Items.GLOW_INK_SAC;
     public static final Item UNGLOW_ITEM = Items.INK_SAC;
 
@@ -67,7 +72,7 @@ public class CrazyPainting implements ModInitializer {
         CrazyEntities.register();
         CrazyRecipes.register();
 
-        "you should put the paintingdata paintingid and record<ChangeKey, PaintingId> to the todo list "
+        ///"you should put the paintingdata paintingid and record<ChangeKey, PaintingId> to the todo list "
     }
 
     public static Identifier id(String path) {

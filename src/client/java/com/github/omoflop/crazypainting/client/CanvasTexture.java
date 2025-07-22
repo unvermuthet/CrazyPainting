@@ -3,11 +3,19 @@ package com.github.omoflop.crazypainting.client;
 import com.github.omoflop.crazypainting.CrazyPainting;
 import com.github.omoflop.crazypainting.client.mixin.TextureManagerAccessor;
 import com.github.omoflop.crazypainting.items.CanvasItem;
+import com.github.omoflop.crazypainting.network.types.PaintingData;
+import com.github.omoflop.crazypainting.network.types.PaintingId;
+import com.github.omoflop.crazypainting.network.types.PaintingSize;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.*;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 
 public class CanvasTexture implements AutoCloseable {
@@ -25,6 +33,10 @@ public class CanvasTexture implements AutoCloseable {
     // Identifier used for lookups or rendering or something
     public final Identifier textureId;
 
+    // Size and id for networking
+    private final PaintingId id;
+    private final PaintingSize size;
+
     private boolean ready = false;
     private boolean editable;
     public int version = -1;
@@ -38,6 +50,9 @@ public class CanvasTexture implements AutoCloseable {
 
     public CanvasTexture(byte canvasWidth, byte canvasHeight, int id, boolean editable) {
         textureId = CrazyPainting.id("canvas/" + id);
+
+        this.id = new PaintingId(id);
+        size = new PaintingSize(canvasWidth, canvasHeight);
 
         width = (canvasWidth * 16);
         height = (canvasHeight * 16);
@@ -119,5 +134,18 @@ public class CanvasTexture implements AutoCloseable {
         }
 
         isClosed = true;
+    }
+
+    public @Nullable PaintingData toData() {
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        img.setRGB(0, 0, width, height, pixels, 0, width);
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            ImageIO.write(img, "qoi", out);
+            return new PaintingData(out.toByteArray(), size, id);
+
+        } catch (IOException e) {
+            return null;
+        }
     }
 }

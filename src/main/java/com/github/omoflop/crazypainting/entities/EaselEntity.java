@@ -7,8 +7,9 @@ import com.github.omoflop.crazypainting.content.CrazyItems;
 import com.github.omoflop.crazypainting.items.CanvasItem;
 import com.github.omoflop.crazypainting.items.PaletteItem;
 import com.github.omoflop.crazypainting.network.event.PaintingChangeEvent;
-import com.github.omoflop.crazypainting.network.types.ChangeId;
-import com.github.omoflop.crazypainting.network.types.PaintingData;
+import com.github.omoflop.crazypainting.network.types.ChangeKey;
+import com.github.omoflop.crazypainting.network.ChangeRecord;
+import com.github.omoflop.crazypainting.network.types.PaintingId;
 import com.github.omoflop.crazypainting.state.CanvasManager;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
@@ -30,6 +31,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.tag.DamageTypeTags;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
@@ -92,10 +94,11 @@ public class EaselEntity extends LivingEntity {
 
                 boolean success = false;
                 if (data == null) {
-                    data = new CanvasDataComponent(-1, holdingGlowItem, null);
+                    data = CanvasDataComponent.DEFAULT.withGlow(holdingGlowItem);
+
                     success = true;
                 } else if (data.glow() == holdingUnGlowItem) {
-                    data = new CanvasDataComponent(data.id(), holdingGlowItem, data.signedBy());
+                    data = data.withGlow(holdingGlowItem);
                     success = true;
                 }
 
@@ -133,14 +136,16 @@ public class EaselEntity extends LivingEntity {
                 edit = true;
             }
 
-            Optional<ChangeId> change = Optional.empty();
+            Optional<ChangeKey> change = Optional.empty();
             if (edit) {
-                change = Optional.of(ChangeId.create(canvasId));
-                CanvasManager.CHANGE_IDS.put(serverPlayer.getUuid(), change.get());
+                ChangeRecord changeRecord = new ChangeRecord(ChangeKey.create(), new PaintingId(canvasId));
+                change = Optional.of(changeRecord.key());
+                CanvasManager.CHANGE_IDS.put(serverPlayer.getUuid(), changeRecord);
             }
 
             try {
-                PaintingChangeEvent changeEvent = new PaintingChangeEvent(change, CanvasManager.createOrLoad(canvasId, canvasItem.getSize(), Objects.requireNonNull(serverPlayer.getServer())));
+                MinecraftServer server = Objects.requireNonNull(serverPlayer.getServer());
+                PaintingChangeEvent changeEvent = new PaintingChangeEvent(change, CanvasManager.createOrLoad(canvasId, canvasItem.getSize(), server), CanvasItem.getTitle(displayStack));
                 ServerPlayNetworking.send(serverPlayer, changeEvent);
             } catch (IOException ignored) {
 

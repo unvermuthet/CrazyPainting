@@ -9,6 +9,7 @@ import com.github.omoflop.crazypainting.client.models.easel.EaselEntityRenderer;
 import com.github.omoflop.crazypainting.client.network.*;
 import com.github.omoflop.crazypainting.content.CrazyEntities;
 import com.github.omoflop.crazypainting.network.event.PaintingChangeEvent;
+import com.github.omoflop.crazypainting.network.s2c.PaintingCanUpdateS2C;
 import com.github.omoflop.crazypainting.network.s2c.PaintingUpdateS2C;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -42,6 +43,7 @@ public class CrazyPaintingClient implements ClientModInitializer {
         // Packet receivers
         ClientPlayNetworking.registerGlobalReceiver(PaintingChangeEvent.ID, new ClientPaintingChangeHandler());
         ClientPlayNetworking.registerGlobalReceiver(PaintingUpdateS2C.ID, new PaintingUpdateHandler());
+        ClientPlayNetworking.registerGlobalReceiver(PaintingCanUpdateS2C.ID, new PaintingCanUpdateHandler());
     }
 
 

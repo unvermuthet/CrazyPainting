@@ -1,10 +1,13 @@
 package com.github.omoflop.crazypainting.client;
 
 import com.github.omoflop.crazypainting.items.CanvasItem;
+import com.github.omoflop.crazypainting.network.c2s.RequestPaintingC2S;
 import com.github.omoflop.crazypainting.network.types.PaintingData;
 import com.github.omoflop.crazypainting.network.types.PaintingSize;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,13 +17,14 @@ import java.util.Optional;
 public class CanvasTextureManager {
     private static final Int2ObjectMap<CanvasTexture> TEXTURE_MAP = new Int2ObjectOpenHashMap<>();
     private static final List<Integer> AWAITED_TEXTURES = new ArrayList<>();
+    private static final List<Integer> UPDATABLE_PAINTING_IDS = new ArrayList<>();
 
     public static Optional<CanvasTexture> request(int id) {
         if (TEXTURE_MAP.containsKey(id)) return Optional.of(TEXTURE_MAP.get(id));
         if (AWAITED_TEXTURES.contains(id)) return Optional.empty();
 
         AWAITED_TEXTURES.add(id);
-        // Put network request here
+        ClientPlayNetworking.send(new RequestPaintingC2S(id));
 
         return Optional.ofNullable(TEXTURE_MAP.get(id));
     }
@@ -52,7 +56,7 @@ public class CanvasTextureManager {
         return TEXTURE_MAP.get(canvasId);
     }
 
-    private static void updateOrCreate(int canvasId, PaintingData data) {
+    private static CanvasTexture updateOrCreate(int canvasId, PaintingData data) {
         CanvasTexture texture;
         if (!TEXTURE_MAP.containsKey(canvasId)) {
             PaintingSize size = data.size();
@@ -67,6 +71,8 @@ public class CanvasTextureManager {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        return texture;
     }
 
     public static int getVersion(int canvasId) {
@@ -74,12 +80,20 @@ public class CanvasTextureManager {
         return get(canvasId).version;
     }
 
-    public static void receive(int canvasId, PaintingData data) {
+    public static CanvasTexture receive(int canvasId, PaintingData data) {
         // Remove from awaited textures if it was requested already
         if (AWAITED_TEXTURES.contains(canvasId)) {
-            AWAITED_TEXTURES.remove(canvasId);
+            AWAITED_TEXTURES.remove((Object)canvasId);
         }
 
-        updateOrCreate(canvasId, data);
+        return updateOrCreate(canvasId, data);
+
+    }
+
+    public static void markAsUpdatable(int id) {
+        //if (UPDATABLE_PAINTING_IDS.contains(id)) return;
+        //UPDATABLE_PAINTING_IDS.add(id);
+        request(id);
+
     }
 }

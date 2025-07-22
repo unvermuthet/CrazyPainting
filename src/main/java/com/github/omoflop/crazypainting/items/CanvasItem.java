@@ -30,6 +30,8 @@ import java.util.UUID;
 
 
 public class CanvasItem extends Item implements Identifiable {
+    public static final String UNTITLED = "Untitled Painting";
+
     public final Identifier id;
 
     public final byte width;
@@ -41,6 +43,13 @@ public class CanvasItem extends Item implements Identifiable {
         this.width = width;
         this.height = height;
 
+    }
+
+    @Override
+    public Text getName(ItemStack stack) {
+        String title = getTitle(stack);
+        if (title.equals(UNTITLED)) return super.getName(stack);
+        return Text.literal(title);
     }
 
     @Override
@@ -89,6 +98,16 @@ public class CanvasItem extends Item implements Identifiable {
         return UUID.fromString(signedBy);
     }
 
+    public static String getTitle(ItemStack stack) {
+        if (!stack.hasChangedComponent(CrazyComponents.CANVAS_DATA)) return UNTITLED;
+
+        var component = stack.getComponents().get(CrazyComponents.CANVAS_DATA);
+        if (component == null) return UNTITLED;
+
+        return component.title();
+    }
+
+
     public static void setId(ItemStack stack, int id) {
         CanvasDataComponent previousData = CanvasDataComponent.DEFAULT;
         if (stack.hasChangedComponent(CrazyComponents.CANVAS_DATA)) {
@@ -96,7 +115,7 @@ public class CanvasItem extends Item implements Identifiable {
             assert previousData != null;
         }
 
-        stack.set(CrazyComponents.CANVAS_DATA, new CanvasDataComponent(id, previousData.glow(), previousData.signedBy()));
+        stack.set(CrazyComponents.CANVAS_DATA, new CanvasDataComponent(id, previousData.glow(), previousData.signedBy(), previousData.title()));
     }
 
     public static void setGlow(ItemStack stack, boolean glow) {
@@ -106,7 +125,7 @@ public class CanvasItem extends Item implements Identifiable {
             assert previousData != null;
         }
 
-        stack.set(CrazyComponents.CANVAS_DATA, new CanvasDataComponent(previousData.id(), glow, previousData.signedBy()));
+        stack.set(CrazyComponents.CANVAS_DATA, new CanvasDataComponent(previousData.id(), glow, previousData.signedBy(), previousData.title()));
     }
 
     public static void setSignedBy(ItemStack stack, UUID signer) {
@@ -116,7 +135,17 @@ public class CanvasItem extends Item implements Identifiable {
             assert previousData != null;
         }
 
-        stack.set(CrazyComponents.CANVAS_DATA, new CanvasDataComponent(previousData.id(), previousData.glow(), signer.toString()));
+        stack.set(CrazyComponents.CANVAS_DATA, new CanvasDataComponent(previousData.id(), previousData.glow(), signer.toString(), previousData.title()));
+    }
+
+    public static void setTitle(ItemStack stack, String title) {
+        CanvasDataComponent previousData = CanvasDataComponent.DEFAULT;
+        if (stack.hasChangedComponent(CrazyComponents.CANVAS_DATA)) {
+            previousData = stack.get(CrazyComponents.CANVAS_DATA);
+            assert previousData != null;
+        }
+
+        stack.set(CrazyComponents.CANVAS_DATA, new CanvasDataComponent(previousData.id(), previousData.glow(), previousData.signedBy(), title));
     }
 
     public PaintingSize getSize() {

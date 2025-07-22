@@ -8,16 +8,18 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-public record PaintingData(byte[] data, PaintingSize size) {
+public record PaintingData(byte[] data, PaintingSize size, PaintingId id) {
     public void writeTo(PacketByteBuf buf) {
         CrazyNetworking.writeByteArray(buf, data);
         size.writeTo(buf);
+        id.writeTo(buf);
     }
 
     public static PaintingData readFrom(PacketByteBuf buf) {
         return new PaintingData(
                 CrazyNetworking.readByteArray(buf),
-                PaintingSize.readFrom(buf)
+                PaintingSize.readFrom(buf),
+                PaintingId.readFrom(buf)
         );
     }
 
