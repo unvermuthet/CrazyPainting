@@ -2,88 +2,79 @@ package com.github.omoflop.crazypainting.client.screens.editor;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import org.jetbrains.annotations.Nullable;
 
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
 public final class BrushType {
-    private static final HashMap<String, HashMap<String, BrushType>> BRUSH_CATEGORIES = new HashMap<>();
+    private static final HashMap<String, ArrayList<BrushType>> BRUSH_CATEGORIES = new HashMap<>();
 
+    public final String name;
+    private final boolean[][] pattern;
 
-    private boolean[][] pattern;
-
-    private BrushType(boolean[][] pattern) {
+    private BrushType(String name, boolean[][] pattern) {
+        this.name = name;
         this.pattern = pattern;
     }
 
-    public static void register(String category, String name, String... pattern) {
-        if (!BRUSH_CATEGORIES.containsKey(category)) {
-            BRUSH_CATEGORIES.put(category, new HashMap<>());
+    public void iteratePattern(int x, int y, PatternConsumer consumer) {
+        for (int xx = 0; xx < getWidth(); xx++) {
+            for (int yy = 0; yy < getHeight(); yy++) {
+                if (pattern[xx][yy]) {
+                    consumer.receive(xx + x, yy + y, 1.0f);
+                }
+            }
         }
-
-        BRUSH_CATEGORIES.get(category).put(name, new BrushType(pattern));
     }
 
-    static {
-        register("Square", "1x1", "",
-                "x"
-                );
-        register("Square", "2x2", "",
-                "xx",
-                "xx"
-                );
-        register("Square", "3x3", "",
-                "xxx",
-                "xxx",
-                "xxx"
-                );
-        register("Square", "4x4", "",
-                "xxxx",
-                "xxxx",
-                "xxxx",
-                "xxxx"
-                );
+    public int getWidth() {
+        return pattern.length;
+    }
 
-        register("Circle", "1x1", "",
-                "x"
-                );
+    public int getHeight() {
+        return pattern[0].length;
+    }
 
-        register("Circle", "2x2", "",
-                "xx",
-                "xx"
-                );
-        register("Circle", "3x3", "",
-                " x ",
-                "xxx",
-                " x "
-                );
-        register("Circle", "4x4", "",
-                " xx ",
-                "xxxx",
-                "xxxx",
-                " xx "
-                );
-        register("Circle", "5x5", "",
-                " xxx ",
-                "xxxxx",
-                "xxxxx",
-                "xxxxx",
-                " xxx "
-                );
-        register("Circle", "6x6", "",
-                " xxxx ",
-                "xxxxxx",
-                "xxxxxx",
-                "xxxxxx",
-                "xxxxxx",
-                " xxxx "
-                );
-        register("Circle", "7x7", "",
-                " xxxx ",
-                "xxxxxx",
-                "xxxxxx",
-                "xxxxxx",
-                "xxxxxx",
-                " xxxx "
-                );
+    public interface PatternConsumer {
+        void receive(int x, int y, float opacity);
+    }
+
+    public static void register(String category, String name, BufferedImage img) {
+        boolean[][] pattern = new boolean[img.getWidth()][img.getHeight()];
+        for (int x = 0; x < img.getWidth(); x++) {
+            for (int y = 0; y < img.getHeight(); y++) {
+                pattern[x][y] = img.getRGB(x, y) != 0x00000000;
+            }
+        }
+
+        if (!BRUSH_CATEGORIES.containsKey(category))
+            BRUSH_CATEGORIES.put(category, new ArrayList<>());
+
+        BRUSH_CATEGORIES.get(category).add(new BrushType(name, pattern));
+    }
+
+    public static void clear() {
+        BRUSH_CATEGORIES.clear();
+    }
+
+    public static Collection<String> getCategories() {
+        return BRUSH_CATEGORIES.keySet();
+    }
+
+    public static Collection<BrushType> getBrushes(String category) {
+        return BRUSH_CATEGORIES.get(category);
+    }
+
+    public static @Nullable BrushType getBrush(String category, String name) {
+        for (BrushType brushType : BRUSH_CATEGORIES.get(category)) {
+            if (brushType.name.equals(name)) {
+                return brushType;
+            }
+        }
+
+        return null;
     }
 }

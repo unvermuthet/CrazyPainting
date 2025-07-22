@@ -1,7 +1,8 @@
 package com.github.omoflop.crazypainting.client.screens;
 
 import com.github.omoflop.crazypainting.CrazyPainting;
-import com.github.omoflop.crazypainting.client.CanvasTexture;
+import com.github.omoflop.crazypainting.client.screens.editor.BrushType;
+import com.github.omoflop.crazypainting.client.texture.CanvasTexture;
 import com.github.omoflop.crazypainting.items.PaletteItem;
 import com.github.omoflop.crazypainting.network.event.PaintingChangeEvent;
 import com.github.omoflop.crazypainting.network.types.ChangeKey;
@@ -18,7 +19,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import org.apache.logging.log4j.Level;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Optional;
@@ -49,6 +50,9 @@ public class PaintingEditorScreen extends Screen {
     private boolean hasChanges = false;
     private final Optional<ChangeKey> key;
 
+    private @Nullable String selectedBrushCategory = "square";
+    private @Nullable BrushType selectedBrushType = BrushType.getBrush("square", "1x1");
+
     public PaintingEditorScreen(PaintingChangeEvent event, CanvasTexture texture) {
         super(Text.translatable("gui.crazypainting.painting_editor.title"));
         this.client = MinecraftClient.getInstance();
@@ -74,31 +78,130 @@ public class PaintingEditorScreen extends Screen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
         super.render(context, mouseX, mouseY, deltaTicks);
-
         if (canvasTexture == null) return;
 
-
+        // Variables positioning elements on screen
         int canvasPixelX = (int)((this.width / 2f - canvasTexture.width*pixelSize/2f) / pixelSize);
         int canvasPixelY = (int)((this.height / 2f - canvasTexture.height*pixelSize/2f) / pixelSize);
 
         int canvasX = canvasPixelX * pixelSize;
         int canvasY = canvasPixelY * pixelSize;
 
-        // Draw Title
-        context.drawCenteredTextWithShadow(textRenderer, Text.literal(paintingTitle), width / 2, 64, CrazyPainting.YELLOW);
-
-        for(int i = 0; i < canvasTexture.pixels.length; i++) {
-            int drawX = canvasX + (i % canvasTexture.width) * pixelSize;
-            int drawY = canvasY + (i / canvasTexture.width) * pixelSize;
-            context.fill(drawX, drawY, drawX + pixelSize, drawY + pixelSize, canvasTexture.pixels[i]);
-        }
-
-        //context.fill(canvasX, canvasY, canvasX + canvasWidthPixels*pixelSize, canvasY + canvasHeightPixels*pixelSize, CrazyPainting.WHITE);
-
         int mousePixelX = mouseX / pixelSize;
         int mousePixelY = mouseY / pixelSize;
 
-        // Draw pixel cursor
+        // Draw title and canvas
+        context.drawCenteredTextWithShadow(textRenderer, Text.literal(paintingTitle), width / 2, 64, CrazyPainting.YELLOW);
+        drawCanvas(context, canvasX, canvasY);
+
+        boolean usePaintCursor = updateCursor(context, mousePixelX, mousePixelY, canvasPixelX, canvasPixelY);
+
+        // Brush size area
+        Text brushText = Text.literal("Brush Settings");
+        context.drawText(textRenderer, brushText, width - 100, 64, CrazyPainting.YELLOW, true);
+        drawBrushArea(context, width - 100, 64 + textRenderer.fontHeight*2, textRenderer.getWidth(brushText), mouseX, mouseY);
+        
+        // Color palette area
+        Text paletteText = Text.translatable("gui.crazypainting.palette");
+        int paletteTextWidth = textRenderer.getWidth(paletteText);
+        context.drawText(textRenderer, paletteText, 100, 64, CrazyPainting.YELLOW, true);
+        drawColorPalette(context, 100 + paletteTextWidth / 2, 65, paletteTextWidth, mouseX, mouseY);
+
+        if (usePaintCursor) drawPaintBrushCursor(context, mouseX, mouseY);
+    }
+
+    private void drawBrushArea(DrawContext context, int x, int y, int textWidth, int mouseX, int mouseY) {
+        int i = 0;
+        for (String category : BrushType.getCategories()) {
+            boolean selected = category.equals(selectedBrushCategory);
+            Text categoryText = Text.literal(category);
+            int categoryTextY = y + i*textRenderer.fontHeight;
+            boolean categoryHovered = mouseX >= x && mouseX < x + textRenderer.getWidth(categoryText) && mouseY >= categoryTextY && mouseY < categoryTextY + textRenderer.fontHeight;
+            int categoryTextColor = CrazyPainting.LIGHT_GRAY;
+            if (selected) {
+                categoryTextColor = CrazyPainting.LIME;
+            } else if (categoryHovered) {
+                categoryTextColor = CrazyPainting.WHITE;
+            }
+
+            context.drawText(textRenderer, categoryText, x, categoryTextY, categoryTextColor, false);
+            if (categoryHovered && leftMouseDown) {
+                selectedBrushCategory = category;
+            }
+
+            if (selected) {
+                int yOffset = 0;
+                var brushes = BrushType.getBrushes(category);
+
+                for (BrushType type : brushes) {
+                    boolean hovered = drawBrushButton(context, type, x + textWidth - 12, y + yOffset, mouseX, mouseY);
+                    if (hovered) {
+                        context.drawTooltip(Text.literal(type.name), mouseX, mouseY);
+                        if (leftMouseDown && selectedBrushType != type) {
+                            client.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.75f, 1f);
+                            selectedBrushType = type;
+                        }
+                    }
+
+                    yOffset += 12;
+                }
+            }
+
+            i++;
+        }
+    }
+
+    private boolean drawBrushButton(DrawContext context, BrushType type, int x, int y, int mouseX, int mouseY) {
+        boolean selected = type == selectedBrushType;
+        context.fill(x, y, x + PALETTE_DISPLAY_SIZE, y + PALETTE_DISPLAY_SIZE, selected ? CrazyPainting.LIME : CrazyPainting.WHITE);
+        context.drawBorder(x - 1, y - 1, PALETTE_DISPLAY_SIZE + 1, PALETTE_DISPLAY_SIZE + 1, CrazyPainting.BLACK);
+
+        int width = PALETTE_DISPLAY_SIZE - type.getWidth();
+        int height = PALETTE_DISPLAY_SIZE - type.getHeight();
+        type.iteratePattern(x + width/2, y + height/2, (x2, y2, opacity) -> {
+            context.fill(x2, y2, x2 + 1, y2 + 1, selected ? CrazyPainting.WHITE : CrazyPainting.BLACK);
+        });
+
+
+        return mouseX >= x &&
+                mouseY >= y &&
+                mouseX < x + PALETTE_DISPLAY_SIZE &&
+                mouseY < y + PALETTE_DISPLAY_SIZE;
+    }
+
+    private void drawPaintBrushCursor(DrawContext context, int mouseX, int mouseY) {
+        if (selectedColor != -1) {
+            context.drawTexture(RenderPipelines.GUI_TEXTURED, EDITOR_TEXTURE_ID, mouseX, mouseY, 16, 0, 16, 16, 64, 64, 0xFFFFFFFF);
+            if (selectedColor == CrazyPainting.TRANSPARENT) {
+                context.drawTexture(RenderPipelines.GUI_TEXTURED, EDITOR_TEXTURE_ID, mouseX, mouseY, 0, 16, 16, 16, 64, 64, 0xFFFFFFFF);
+            } else {
+                context.drawTexture(RenderPipelines.GUI_TEXTURED, EDITOR_TEXTURE_ID, mouseX, mouseY, 0, 0, 16, 16, 64, 64, selectedColor);
+            }
+        }
+    }
+
+    private void drawColorPalette(DrawContext context, int x, int y, int textWidth, int mouseX, int mouseY) {
+
+        if (colors == null) {
+            context.drawWrappedTextWithShadow(textRenderer, Text.translatable("gui.crazypainting.palette.empty"), 100 - textWidth, 64 + textRenderer.fontHeight * 2, textWidth*3, CrazyPainting.RED);
+            return;
+        }
+        for (int i = 0; i < colors.length; i++) {
+            int color = colors[i];
+            int drawX = x + (i % 2) * (PALETTE_DISPLAY_SIZE+1) - PALETTE_DISPLAY_SIZE;
+            int drawY = y + textRenderer.fontHeight + (i / 2) * (PALETTE_DISPLAY_SIZE+1);
+            boolean hovered = drawPaletteColor(context, color, drawX, drawY, mouseX, mouseY);
+            if (leftMouseDown && hovered) {
+                if (selectedColor != color) {
+                    client.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.75f, 1);
+                }
+                selectedColor = color;
+                lastSelectedColor = color;
+            }
+        }
+    }
+
+    private boolean updateCursor(DrawContext context, int mousePixelX, int mousePixelY, int canvasPixelX, int canvasPixelY) {
         boolean cursorHidden = false;
         if (mousePixelX >= canvasPixelX && mousePixelY >= canvasPixelY && mousePixelX < canvasPixelX + canvasTexture.width && mousePixelY < canvasPixelY + canvasTexture.height) {
             context.drawBorder(mousePixelX * pixelSize - 1, mousePixelY * pixelSize - 1, pixelSize + 2, pixelSize + 2, selectedColor);
@@ -116,46 +219,20 @@ public class PaintingEditorScreen extends Screen {
             }
         } else {
             GLFW.glfwSetInputMode(client.getWindow().getHandle(), GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_NORMAL);
-            cursorHidden = false;
         }
 
-        // Brush size area
-        context.drawText(textRenderer, Text.translatable("gui.crazypainting.painting_editor.brush_size"), width - 100, 64, CrazyPainting.YELLOW, true);
-
-        // Color palette area
-        context.drawText(textRenderer, Text.translatable("gui.crazypainting.palette"), 100, 64, CrazyPainting.YELLOW, true);
-        int textWidth = textRenderer.getWidth(Text.translatable("gui.crazypainting.palette"));
-
-        if (colors == null) {
-            context.drawWrappedTextWithShadow(textRenderer, Text.translatable("gui.crazypainting.palette.empty"), 100 - textWidth, 64 + textRenderer.fontHeight * 2, textWidth*3, CrazyPainting.RED);
-            return;
-        }
-        for (int i = 0; i < colors.length; i++) {
-            int color = colors[i];
-            int drawX = 100 + textWidth/2 + (i % 2) * (PALETTE_DISPLAY_SIZE+1) - PALETTE_DISPLAY_SIZE;
-            int drawY = 65 + textRenderer.fontHeight + (i / 2) * (PALETTE_DISPLAY_SIZE+1);
-            boolean hovered = drawPaletteColor(context, color, drawX, drawY, mouseX, mouseY);
-            if (leftMouseDown && hovered) {
-                if (selectedColor != color) {
-                    client.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 1, 1);
-                }
-                selectedColor = color;
-                lastSelectedColor = color;
-            }
-        }
-
-        if (cursorHidden && selectedColor != -1) {
-            context.drawTexture(RenderPipelines.GUI_TEXTURED, EDITOR_TEXTURE_ID, mouseX, mouseY, 16, 0, 16, 16, 64, 64, 0xFFFFFFFF);
-            if (selectedColor == CrazyPainting.TRANSPARENT) {
-                context.drawTexture(RenderPipelines.GUI_TEXTURED, EDITOR_TEXTURE_ID, mouseX, mouseY, 0, 16, 16, 16, 64, 64, 0xFFFFFFFF);
-            } else {
-                context.drawTexture(RenderPipelines.GUI_TEXTURED, EDITOR_TEXTURE_ID, mouseX, mouseY, 0, 0, 16, 16, 64, 64, selectedColor);
-            }
-        }
-
+        return cursorHidden;
     }
 
-    public boolean drawPaletteColor(DrawContext context, int color, int x, int y, int mouseX, int mouseY) {
+    private void drawCanvas(DrawContext context, int canvasX, int canvasY) {
+        for(int i = 0; i < canvasTexture.pixels.length; i++) {
+            int drawX = canvasX + (i % canvasTexture.width) * pixelSize;
+            int drawY = canvasY + (i / canvasTexture.width) * pixelSize;
+            context.fill(drawX, drawY, drawX + pixelSize, drawY + pixelSize, canvasTexture.pixels[i]);
+        }
+    }
+
+    private boolean drawPaletteColor(DrawContext context, int color, int x, int y, int mouseX, int mouseY) {
         context.fill(x, y, x + PALETTE_DISPLAY_SIZE, y + PALETTE_DISPLAY_SIZE, color);
         context.drawBorder(x - 1, y - 1, PALETTE_DISPLAY_SIZE + 1, PALETTE_DISPLAY_SIZE + 1, selectedColor == color ? CrazyPainting.WHITE : CrazyPainting.BLACK);
 
@@ -177,11 +254,6 @@ public class PaintingEditorScreen extends Screen {
         if (button == 0) leftMouseDown = false;
         else if (button == 1) rightMouseDown = false;
 
-        if (canvasTexture != null && (button == 0 || button == 1)) {
-            canvasTexture.updateTexture();
-           // ClientPlayNetworking.send(new SendPaintingC2SPacket(easel.getId(), CanvasTextureManager.getVersion(canvasId), false, canvasTexture.pixels));
-        }
-
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
@@ -190,14 +262,9 @@ public class PaintingEditorScreen extends Screen {
         hasChanges = true;
     }
 
-    public int getPixel(int x, int y) {
-        return canvasTexture.pixels[x + y * canvasTexture.width];
-    }
-
     @Override
     public void tick() {
         super.tick();
-
 
         if (hasChanges) {
             updateCooldown -= 1;
@@ -206,10 +273,12 @@ public class PaintingEditorScreen extends Screen {
                 hasChanges = false;
 
                 PaintingData data = canvasTexture.toData();
-                if (data != null)
+                if (data != null) {
                     ClientPlayNetworking.send(new PaintingChangeEvent(key, data, paintingTitle));
-                else
-                    LOGGER.log(Level.ALL, "Failed to send painting change update packet");
+                    canvasTexture.updateTexture();
+                } else {
+                    LOGGER.error("Failed to send painting change update packet");
+                }
             }
         }
 
@@ -227,9 +296,10 @@ public class PaintingEditorScreen extends Screen {
     @Override
     public void close() {
         super.close();
+
+        canvasTexture.updateTexture();
         PaintingData data = canvasTexture.toData();
-        if (data != null)
-            ClientPlayNetworking.send(new PaintingChangeEvent(key, data, paintingTitle));
+        if (data != null) ClientPlayNetworking.send(new PaintingChangeEvent(key, data, paintingTitle));
 
         client.mouse.lockCursor();
     }

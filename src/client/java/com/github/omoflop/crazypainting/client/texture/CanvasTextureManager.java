@@ -1,4 +1,4 @@
-package com.github.omoflop.crazypainting.client;
+package com.github.omoflop.crazypainting.client.texture;
 
 import com.github.omoflop.crazypainting.items.CanvasItem;
 import com.github.omoflop.crazypainting.network.c2s.RequestPaintingC2S;
@@ -7,7 +7,6 @@ import com.github.omoflop.crazypainting.network.types.PaintingSize;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 
 import java.io.IOException;
 import java.util.ArrayList;

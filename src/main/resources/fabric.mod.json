@@ -11,7 +11,7 @@
   "environment": "*",
   "entrypoints": {
     "fabric-datagen": [
-      "com.github.omoflop.crazypainting.client.CrazyPaintingDataGenerator"
+      "com.github.omoflop.crazypainting.client.datagen.CrazyPaintingDataGenerator"
     ],
     "client": [
       "com.github.omoflop.crazypainting.client.CrazyPaintingClient"

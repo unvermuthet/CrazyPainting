@@ -6,7 +6,11 @@ import com.github.omoflop.crazypainting.client.models.canvas.CanvasEntityRendere
 import com.github.omoflop.crazypainting.client.models.canvas.CanvasSpecialRenderer;
 import com.github.omoflop.crazypainting.client.models.easel.EaselEntityModel;
 import com.github.omoflop.crazypainting.client.models.easel.EaselEntityRenderer;
-import com.github.omoflop.crazypainting.client.network.*;
+import com.github.omoflop.crazypainting.client.network.ClientPaintingChangeHandler;
+import com.github.omoflop.crazypainting.client.network.PaintingCanUpdateHandler;
+import com.github.omoflop.crazypainting.client.network.PaintingUpdateHandler;
+import com.github.omoflop.crazypainting.client.network.UpdateEaselCanvasIdHandler;
+import com.github.omoflop.crazypainting.client.resources.BrushReloadListener;
 import com.github.omoflop.crazypainting.content.CrazyEntities;
 import com.github.omoflop.crazypainting.network.event.PaintingChangeEvent;
 import com.github.omoflop.crazypainting.network.s2c.PaintingCanUpdateS2C;
@@ -16,9 +20,11 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.client.render.item.model.special.SpecialModelTypes;
 import net.minecraft.client.render.item.property.bool.BooleanProperties;
+import net.minecraft.resource.ResourceType;
 
 public class CrazyPaintingClient implements ClientModInitializer {
 
@@ -46,6 +52,8 @@ public class CrazyPaintingClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(PaintingUpdateS2C.ID, new PaintingUpdateHandler());
         ClientPlayNetworking.registerGlobalReceiver(PaintingCanUpdateS2C.ID, new PaintingCanUpdateHandler());
         ClientPlayNetworking.registerGlobalReceiver(UpdateEaselCanvasIdS2C.ID, new UpdateEaselCanvasIdHandler());
+
+        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new BrushReloadListener());
     }
 
 

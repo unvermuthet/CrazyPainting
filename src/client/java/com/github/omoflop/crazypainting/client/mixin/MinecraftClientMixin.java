@@ -1,6 +1,6 @@
 package com.github.omoflop.crazypainting.client.mixin;
 
-import com.github.omoflop.crazypainting.client.CanvasTextureManager;
+import com.github.omoflop.crazypainting.client.texture.CanvasTextureManager;
 import net.minecraft.client.MinecraftClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

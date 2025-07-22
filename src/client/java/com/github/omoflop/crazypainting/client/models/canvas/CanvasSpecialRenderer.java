@@ -1,8 +1,8 @@
 package com.github.omoflop.crazypainting.client.models.canvas;
 
 import com.github.omoflop.crazypainting.CrazyPainting;
-import com.github.omoflop.crazypainting.client.CanvasTexture;
-import com.github.omoflop.crazypainting.client.CanvasTextureManager;
+import com.github.omoflop.crazypainting.client.texture.CanvasTexture;
+import com.github.omoflop.crazypainting.client.texture.CanvasTextureManager;
 import com.github.omoflop.crazypainting.items.CanvasItem;
 import com.mojang.serialization.MapCodec;
 import net.fabricmc.api.EnvType;

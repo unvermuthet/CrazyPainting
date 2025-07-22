@@ -1,7 +1,7 @@
 package com.github.omoflop.crazypainting.client.network;
 
-import com.github.omoflop.crazypainting.client.CanvasTexture;
-import com.github.omoflop.crazypainting.client.CanvasTextureManager;
+import com.github.omoflop.crazypainting.client.texture.CanvasTexture;
+import com.github.omoflop.crazypainting.client.texture.CanvasTextureManager;
 import com.github.omoflop.crazypainting.client.screens.PaintingEditorScreen;
 import com.github.omoflop.crazypainting.client.screens.PaintingViewerScreen;
 import com.github.omoflop.crazypainting.network.event.PaintingChangeEvent;

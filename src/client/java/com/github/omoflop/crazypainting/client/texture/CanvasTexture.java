@@ -1,4 +1,4 @@
-package com.github.omoflop.crazypainting.client;
+package com.github.omoflop.crazypainting.client.texture;
 
 import com.github.omoflop.crazypainting.CrazyPainting;
 import com.github.omoflop.crazypainting.client.mixin.TextureManagerAccessor;
@@ -6,7 +6,6 @@ import com.github.omoflop.crazypainting.items.CanvasItem;
 import com.github.omoflop.crazypainting.network.types.PaintingData;
 import com.github.omoflop.crazypainting.network.types.PaintingId;
 import com.github.omoflop.crazypainting.network.types.PaintingSize;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.*;
 import net.minecraft.util.Identifier;

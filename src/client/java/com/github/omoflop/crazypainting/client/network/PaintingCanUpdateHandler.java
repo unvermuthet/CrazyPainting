@@ -1,7 +1,7 @@
 package com.github.omoflop.crazypainting.client.network;
 
 import com.github.omoflop.crazypainting.CrazyPainting;
-import com.github.omoflop.crazypainting.client.CanvasTextureManager;
+import com.github.omoflop.crazypainting.client.texture.CanvasTextureManager;
 import com.github.omoflop.crazypainting.network.s2c.PaintingCanUpdateS2C;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import org.apache.logging.log4j.Level;
