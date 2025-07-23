@@ -18,7 +18,7 @@
   "gui.crazypainting.palette": "Palette",
   "gui.crazypainting.palette.empty": "You have no colors yet! Combine your palette with dyes to unlock them.",
   "gui.crazypainting.painting_editor.title": "Painting Editor",
-  "gui.crazypainting.painting_editor.brush_size": "Brush Size",
+  "gui.crazypainting.painting_editor.brush_settings": "Brush Settings",
   "gui.crazypainting.painting_viewer.title": "Painting Viewer",
 
   "chat.crazypainting.canvas_update_error": "Failed to update painting",

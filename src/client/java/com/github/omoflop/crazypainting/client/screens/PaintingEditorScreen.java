@@ -97,7 +97,7 @@ public class PaintingEditorScreen extends Screen {
         boolean usePaintCursor = updateCursor(context, mousePixelX, mousePixelY, canvasPixelX, canvasPixelY);
 
         // Brush size area
-        Text brushText = Text.literal("Brush Settings");
+        Text brushText = Text.translatable("gui.crazypainting.painting_editor.brush_settings");
         context.drawText(textRenderer, brushText, width - 100, 64, CrazyPainting.YELLOW, true);
         drawBrushArea(context, width - 100, 64 + textRenderer.fontHeight*2, textRenderer.getWidth(brushText), mouseX, mouseY);
         
@@ -181,11 +181,11 @@ public class PaintingEditorScreen extends Screen {
     }
 
     private void drawColorPalette(DrawContext context, int x, int y, int textWidth, int mouseX, int mouseY) {
-
         if (colors == null) {
             context.drawWrappedTextWithShadow(textRenderer, Text.translatable("gui.crazypainting.palette.empty"), 100 - textWidth, 64 + textRenderer.fontHeight * 2, textWidth*3, CrazyPainting.RED);
             return;
         }
+
         for (int i = 0; i < colors.length; i++) {
             int color = colors[i];
             int drawX = x + (i % 2) * (PALETTE_DISPLAY_SIZE+1) - PALETTE_DISPLAY_SIZE;
@@ -204,14 +204,24 @@ public class PaintingEditorScreen extends Screen {
     private boolean updateCursor(DrawContext context, int mousePixelX, int mousePixelY, int canvasPixelX, int canvasPixelY) {
         boolean cursorHidden = false;
         if (mousePixelX >= canvasPixelX && mousePixelY >= canvasPixelY && mousePixelX < canvasPixelX + canvasTexture.width && mousePixelY < canvasPixelY + canvasTexture.height) {
-            context.drawBorder(mousePixelX * pixelSize - 1, mousePixelY * pixelSize - 1, pixelSize + 2, pixelSize + 2, selectedColor);
+            if (selectedBrushType != null) {
+                selectedBrushType.iteratePatternCentered(mousePixelX, mousePixelY, (px, py, alpha) -> {
+                    
+                    int drawX = px * pixelSize;
+                    int drawY = py * pixelSize;
+                    int bob = (int) Math.sin(client.getRenderTime()) * 20 + 60;
+                    context.fill(drawX, drawY, drawX + pixelSize, drawY + pixelSize, (selectedColor & 0x00FFFFFF) | (0x1000000 * bob));
 
-            if (selectedColor != -1 && leftMouseDown) {
-                setPixel(mousePixelX - canvasPixelX, mousePixelY - canvasPixelY, selectedColor);
+                });
+
+                if (selectedColor != -1 && leftMouseDown) {
+                    setPixel(mousePixelX - canvasPixelX, mousePixelY - canvasPixelY, selectedColor);
+                }
+                if (rightMouseDown) {
+                    setPixel(mousePixelX - canvasPixelX, mousePixelY - canvasPixelY, CrazyPainting.WHITE);
+                }
             }
-            if (rightMouseDown) {
-                setPixel(mousePixelX - canvasPixelX, mousePixelY - canvasPixelY, CrazyPainting.WHITE);
-            }
+
 
             if (selectedColor != -1) {
                 GLFW.glfwSetInputMode(client.getWindow().getHandle(), GLFW.GLFW_CURSOR, GLFW.GLFW_CURSOR_HIDDEN);
@@ -258,8 +268,17 @@ public class PaintingEditorScreen extends Screen {
     }
 
     public void setPixel(int x, int y, int color) {
-        canvasTexture.pixels[x + y * canvasTexture.width] = color;
+        if (selectedBrushType == null) return;
+        selectedBrushType.iteratePatternCentered(x, y, (px, py, alpha) -> {
+            if (!isPixelInBounds(px, py)) return;
+            canvasTexture.pixels[px + py * canvasTexture.width] = color;
+        });
+
         hasChanges = true;
+    }
+
+    public boolean isPixelInBounds(int x, int y) {
+        return x >= 0 && x < canvasTexture.width && y >= 0 && y < canvasTexture.height;
     }
 
     @Override

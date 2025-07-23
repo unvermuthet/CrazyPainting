@@ -30,6 +30,16 @@ public final class BrushType {
         }
     }
 
+    public void iteratePatternCentered(int x, int y, PatternConsumer consumer) {
+        for (int xx = 0; xx < getWidth(); xx++) {
+            for (int yy = 0; yy < getHeight(); yy++) {
+                if (pattern[xx][yy]) {
+                    consumer.receive(xx + x - getWidth()/2, yy + y - getHeight()/2, 1.0f);
+                }
+            }
+        }
+    }
+
     public int getWidth() {
         return pattern.length;
     }
