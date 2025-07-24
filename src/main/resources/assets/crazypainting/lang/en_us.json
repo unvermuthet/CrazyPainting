@@ -19,7 +19,7 @@
   "gui.crazypainting.palette.empty": "You have no colors yet! Combine your palette with dyes to unlock them.",
   "gui.crazypainting.painting_editor.title": "Painting Editor",
   "gui.crazypainting.painting_editor.brush_settings": "Brush Settings",
-  "gui.crazypainting.painting_viewer.title": "Painting Viewer",
+  "gui.crazypainting.painting_viewer.title": "Untitled Painting",
 
   "chat.crazypainting.canvas_update_error": "Failed to update painting",
   "chat.crazypainting.canvas_sign_error": "Paintings cannot be edited once it has been signed",
