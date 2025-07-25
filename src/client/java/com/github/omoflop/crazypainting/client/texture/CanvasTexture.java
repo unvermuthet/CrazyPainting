@@ -69,6 +69,10 @@ public class CanvasTexture implements AutoCloseable {
         glTexture = new NativeImageBackedTexture(textureId::toString, nativeImage);
     }
 
+    public boolean isPixelInBounds(int x, int y) {
+        return x >= 0 && x < width && y >= 0 && y < height;
+    }
+
     public boolean isReady() {
         return ready;
     }

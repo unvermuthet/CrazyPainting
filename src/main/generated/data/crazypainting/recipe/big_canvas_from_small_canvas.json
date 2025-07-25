@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "big_canvas",
+  "key": {
+    "@": "crazypainting:small_canvas"
+  },
+  "pattern": [
+    "@@",
+    "@@"
+  ],
+  "result": {
+    "count": 1,
+    "id": "crazypainting:big_canvas"
+  }
+}

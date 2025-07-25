@@ -74,19 +74,15 @@ public class CanvasTextureManager {
         return texture;
     }
 
-    public static int getVersion(int canvasId) {
-        if (!TEXTURE_MAP.containsKey(canvasId)) return -1;
-        return get(canvasId).version;
-    }
-
     public static CanvasTexture receive(int canvasId, PaintingData data) {
         // Remove from awaited textures if it was requested already
         if (AWAITED_TEXTURES.contains(canvasId)) {
             AWAITED_TEXTURES.remove((Object)canvasId);
         }
 
-        return updateOrCreate(canvasId, data);
-
+        CanvasTexture texture = updateOrCreate(canvasId, data);
+        texture.updateTexture();
+        return texture;
     }
 
     public static void markAsUpdatable(int id) {

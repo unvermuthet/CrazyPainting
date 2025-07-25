@@ -59,6 +59,8 @@ public class CanvasItem extends Item implements Identifiable {
         World world = context.getWorld();
         ItemStack usageStack = context.getStack();
 
+        if (CanvasItem.getCanvasId(usageStack) == -1) return ActionResult.PASS;
+
         boolean mayPlace = world.getBlockState(pos).isSideSolid(world, pos, side, SideShapeType.CENTER);
         if (!mayPlace) return ActionResult.PASS;
 
@@ -79,6 +81,14 @@ public class CanvasItem extends Item implements Identifiable {
         return component.id();
     }
 
+
+    public static int getGeneration(ItemStack stack) {
+        if (!stack.hasChangedComponent(CrazyComponents.CANVAS_DATA)) return -1;
+        var component = stack.getComponents().get(CrazyComponents.CANVAS_DATA);
+        if (component == null) return -1;
+        return component.generation();
+    }
+
     public static boolean getGlow(ItemStack stack) {
         if (!stack.hasChangedComponent(CrazyComponents.CANVAS_DATA)) return false;
         var component = stack.getComponents().get(CrazyComponents.CANVAS_DATA);
@@ -86,7 +96,7 @@ public class CanvasItem extends Item implements Identifiable {
         return component.glow();
     }
 
-    public static @Nullable UUID getSignedBy(ItemStack stack) {
+    public static @Nullable String getSignedBy(ItemStack stack) {
         if (!stack.hasChangedComponent(CrazyComponents.CANVAS_DATA)) return null;
 
         var component = stack.getComponents().get(CrazyComponents.CANVAS_DATA);
@@ -95,7 +105,7 @@ public class CanvasItem extends Item implements Identifiable {
         String signedBy = component.signedBy();
         if (signedBy.isEmpty()) return null;
 
-        return UUID.fromString(signedBy);
+        return signedBy;
     }
 
     public static String getTitle(ItemStack stack) {
@@ -105,47 +115,6 @@ public class CanvasItem extends Item implements Identifiable {
         if (component == null) return UNTITLED;
 
         return component.title();
-    }
-
-
-    public static void setId(ItemStack stack, int id) {
-        CanvasDataComponent previousData = CanvasDataComponent.DEFAULT;
-        if (stack.hasChangedComponent(CrazyComponents.CANVAS_DATA)) {
-            previousData = stack.get(CrazyComponents.CANVAS_DATA);
-            assert previousData != null;
-        }
-
-        stack.set(CrazyComponents.CANVAS_DATA, new CanvasDataComponent(id, previousData.glow(), previousData.signedBy(), previousData.title()));
-    }
-
-    public static void setGlow(ItemStack stack, boolean glow) {
-        CanvasDataComponent previousData = CanvasDataComponent.DEFAULT;
-        if (stack.hasChangedComponent(CrazyComponents.CANVAS_DATA)) {
-            previousData = stack.get(CrazyComponents.CANVAS_DATA);
-            assert previousData != null;
-        }
-
-        stack.set(CrazyComponents.CANVAS_DATA, new CanvasDataComponent(previousData.id(), glow, previousData.signedBy(), previousData.title()));
-    }
-
-    public static void setSignedBy(ItemStack stack, UUID signer) {
-        CanvasDataComponent previousData = CanvasDataComponent.DEFAULT;
-        if (stack.hasChangedComponent(CrazyComponents.CANVAS_DATA)) {
-            previousData = stack.get(CrazyComponents.CANVAS_DATA);
-            assert previousData != null;
-        }
-
-        stack.set(CrazyComponents.CANVAS_DATA, new CanvasDataComponent(previousData.id(), previousData.glow(), signer.toString(), previousData.title()));
-    }
-
-    public static void setTitle(ItemStack stack, String title) {
-        CanvasDataComponent previousData = CanvasDataComponent.DEFAULT;
-        if (stack.hasChangedComponent(CrazyComponents.CANVAS_DATA)) {
-            previousData = stack.get(CrazyComponents.CANVAS_DATA);
-            assert previousData != null;
-        }
-
-        stack.set(CrazyComponents.CANVAS_DATA, new CanvasDataComponent(previousData.id(), previousData.glow(), previousData.signedBy(), title));
     }
 
     public PaintingSize getSize() {

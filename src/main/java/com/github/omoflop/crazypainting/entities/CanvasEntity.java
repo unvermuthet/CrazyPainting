@@ -51,7 +51,7 @@ public class CanvasEntity extends AbstractDecorationEntity {
     public ActionResult interact(PlayerEntity player, Hand hand) {
         if (getHeldItemStack().getItem() instanceof CanvasItem canvasItem && canvasItem.width == canvasItem.height) {
 
-            setRotation((byte) (getRotation() + 1));
+            setRotation((byte) (getItemRotation() + 1));
             return ActionResult.SUCCESS;
         }
         return super.interact(player, hand);
@@ -59,8 +59,8 @@ public class CanvasEntity extends AbstractDecorationEntity {
 
     @Override
     protected Box calculateBoundingBox(BlockPos pos, Direction side) {
-        int width = 1;
-        int height = 1;
+        float width = 1;
+        float height = 1;
 
         if (dataTracker.get(CANVAS_ITEM).getItem() instanceof CanvasItem canvas) {
             width = canvas.width;
@@ -72,6 +72,9 @@ public class CanvasEntity extends AbstractDecorationEntity {
 
         final float distFromWall = 0.46f;
         final float pixel = 1/16f;
+
+        width -= pixel*2.35f;
+        height -= pixel*2.35f;
 
         if (side == Direction.UP) {
             return Box.of(pos.toCenterPos().subtract(widthTweak, distFromWall, heightTweak), width, pixel, height);
@@ -141,8 +144,12 @@ public class CanvasEntity extends AbstractDecorationEntity {
         this.updateAttachmentPosition();
     }
 
-    public byte getRotation() {
+    public byte getItemRotation() {
         return this.getDataTracker().get(ROTATION);
+    }
+
+    public void setItemRotation(byte rotation) {
+        this.getDataTracker().set(ROTATION, rotation);
     }
 
     public void setRotation(byte value) {
@@ -152,11 +159,9 @@ public class CanvasEntity extends AbstractDecorationEntity {
     protected void writeCustomData(WriteView view) {
         super.writeCustomData(view);
         ItemStack itemStack = this.getHeldItemStack();
-        if (!itemStack.isEmpty()) {
-            view.put("Item", ItemStack.CODEC, itemStack);
-        }
+        if (!itemStack.isEmpty()) view.put("Item", ItemStack.CODEC, itemStack);
 
-        view.putByte("ItemRotation", this.getRotation());
+        view.putByte("ItemRotation", this.getItemRotation());
         view.put("Facing", Direction.INDEX_CODEC, this.getFacing());
     }
 
@@ -165,7 +170,7 @@ public class CanvasEntity extends AbstractDecorationEntity {
         ItemStack itemStack = view.read("Item", ItemStack.CODEC).orElse(ItemStack.EMPTY);
 
         this.setHeldItemStack(itemStack);
-        this.setRotation(view.getByte("ItemRotation", (byte)0), 0);
+        this.setItemRotation(view.getByte("ItemRotation", (byte)0));
         this.setFacing(view.read("Facing", Direction.INDEX_CODEC).orElse(Direction.DOWN));
     }
 

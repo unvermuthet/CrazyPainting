@@ -19,22 +19,20 @@ public class ClientPaintingChangeHandler implements ClientPlayNetworking.PlayPay
     @Override
     public void receive(PaintingChangeEvent packet, ClientPlayNetworking.Context context) {
         if (SHOW_NETWORK_LOGS) {
-            LOGGER.log(Level.ALL, "Received painting change");
+            LOGGER.info( "Received painting change");
 
-            LOGGER.log(Level.ALL,"Change present? " + packet.change().isPresent());
+            LOGGER.info("Change present? {}", packet.change().isPresent());
             if (packet.change().isPresent()) {
                 ChangeKey key = packet.change().get();
-                LOGGER.log(Level.ALL,"\t key:" + Arrays.toString(key.key()));
+                LOGGER.info("\t key:{}", Arrays.toString(key.key()));
             }
 
-            LOGGER.log(Level.ALL, Arrays.toString(packet.data().data()));
+            LOGGER.info(Arrays.toString(packet.data().data()));
         }
-
-        System.out.println("Received painting change Event");
 
         if (packet.change().isPresent()) {
             CanvasTexture texture = CanvasTextureManager.receive(packet.data().id().value(), packet.data());
-            MinecraftClient.getInstance().setScreen(new PaintingEditorScreen(packet, texture));
+            MinecraftClient.getInstance().setScreen(new PaintingEditorScreen(packet, texture, context.player(), packet.easelEntityId()));
         } else {
             MinecraftClient.getInstance().setScreen(new PaintingViewerScreen(packet.data(), packet.title()));
         }

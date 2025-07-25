@@ -133,7 +133,7 @@ public class EaselEntity extends LivingEntity {
             int canvasId = CanvasItem.getCanvasId(displayStack);
             if (canvasId == -1 && hasPaletteInEitherHand) {
                 canvasId = CanvasManager.getServerState(Objects.requireNonNull(serverPlayer.getServer())).getNextId();
-                CanvasItem.setId(displayStack, canvasId);
+                displayStack.set(CrazyComponents.CANVAS_DATA, CanvasDataComponent.withId(displayStack.get(CrazyComponents.CANVAS_DATA), canvasId));
                 edit = true;
             }
 
@@ -146,9 +146,11 @@ public class EaselEntity extends LivingEntity {
 
             try {
                 MinecraftServer server = Objects.requireNonNull(serverPlayer.getServer());
-                PaintingChangeEvent changeEvent = new PaintingChangeEvent(change, CanvasManager.createOrLoad(canvasId, canvasItem.getSize(), server), CanvasItem.getTitle(displayStack));
+                PaintingChangeEvent changeEvent = new PaintingChangeEvent(change, CanvasManager.createOrLoad(canvasId, canvasItem.getSize(), server), CanvasItem.getTitle(displayStack), this.getId());
                 ServerPlayNetworking.send(serverPlayer, changeEvent);
-                ServerPlayNetworking.send(serverPlayer, new UpdateEaselCanvasIdS2C(this.getId(), new PaintingId(canvasId)));
+                for (ServerPlayerEntity serverPlayerEntity : server.getPlayerManager().getPlayerList()) {
+                    ServerPlayNetworking.send(serverPlayerEntity, new UpdateEaselCanvasIdS2C(this.getId(), new PaintingId(canvasId)));
+                }
 
 
 
@@ -304,6 +306,7 @@ public class EaselEntity extends LivingEntity {
         ItemStack itemStack = new ItemStack(CrazyItems.EASEL_ITEM);
         itemStack.set(DataComponentTypes.CUSTOM_NAME, this.getCustomName());
         Block.dropStack(this.getWorld(), this.getBlockPos(), itemStack);
+        Block.dropStack(this.getWorld(), this.getBlockPos(), getDisplayStack());
         this.onBreak(world, damageSource);
     }
 

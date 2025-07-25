@@ -1,9 +1,14 @@
 package com.github.omoflop.crazypainting.client;
 
+import com.github.omoflop.crazypainting.CrazyPainting;
+
 import java.awt.*;
 
 public final class ColorHelper {
     public static int mix(int colorA, int colorB) {
+        if (colorA == CrazyPainting.TRANSPARENT) return colorB;
+        if (colorB == CrazyPainting.TRANSPARENT) return colorA;
+
         Color fg = new Color(colorA, true);
         Color bg = new Color(colorB, true);
 

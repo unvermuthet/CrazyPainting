@@ -9,7 +9,7 @@ import net.minecraft.network.packet.CustomPayload;
 
 import java.util.Optional;
 
-public record PaintingChangeEvent(Optional<ChangeKey> change, PaintingData data, String title) implements CustomPayload {
+public record PaintingChangeEvent(Optional<ChangeKey> change, PaintingData data, String title, int easelEntityId) implements CustomPayload {
     public static final Id<PaintingChangeEvent> ID = new Id<>(CrazyPainting.id("painting_change"));
     public static final PacketCodec<PacketByteBuf, PaintingChangeEvent> CODEC = PacketCodec.of(PaintingChangeEvent::encode, PaintingChangeEvent::decode);
 
@@ -19,6 +19,7 @@ public record PaintingChangeEvent(Optional<ChangeKey> change, PaintingData data,
         data.writeTo(buf);
 
         buf.writeString(title);
+        buf.writeInt(easelEntityId);
     }
 
     private static PaintingChangeEvent decode(PacketByteBuf buf) {
@@ -27,7 +28,8 @@ public record PaintingChangeEvent(Optional<ChangeKey> change, PaintingData data,
         return new PaintingChangeEvent(
                 changeIsPresent ? Optional.of(ChangeKey.readFrom(buf)) : Optional.empty(),
                 PaintingData.readFrom(buf),
-                buf.readString(32)
+                buf.readString(32),
+                buf.readInt()
         );
     }
 

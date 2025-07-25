@@ -71,8 +71,6 @@ public class CrazyPainting implements ModInitializer {
         CrazyItems.register();
         CrazyEntities.register();
         CrazyRecipes.register();
-
-        ///"you should put the paintingdata paintingid and record<ChangeKey, PaintingId> to the todo list "
     }
 
     public static Identifier id(String path) {
