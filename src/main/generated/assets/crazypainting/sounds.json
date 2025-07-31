@@ -1,0 +1,31 @@
+{
+  "brush_use": {
+    "category": "ui",
+    "sounds": [
+      "crazypainting:brush0",
+      "crazypainting:brush1",
+      "crazypainting:brush2",
+      "crazypainting:brush3",
+      "crazypainting:brush4",
+      "crazypainting:brush5"
+    ],
+    "subtitle": "subtitles.crazypainting.brush_use"
+  },
+  "color_picker_use": {
+    "category": "ui",
+    "sounds": [
+      "crazypainting:pick_color"
+    ],
+    "subtitle": "subtitles.crazypainting.color_picker_use"
+  },
+  "undo": {
+    "category": "ui",
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.item_frame.remove_item"
+      }
+    ],
+    "subtitle": "subtitles.crazypainting.undo"
+  }
+}

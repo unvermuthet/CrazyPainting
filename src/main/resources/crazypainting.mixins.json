@@ -4,6 +4,7 @@
   "package": "com.github.omoflop.crazypainting.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "ShieldDecorationRecipeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

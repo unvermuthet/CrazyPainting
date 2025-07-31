@@ -52,7 +52,7 @@ public class CanvasManager extends PersistentState {
         if (bytes.isEmpty()) return null;
 
         BufferedImage img = ImageIO.read(paintingPath.toFile());
-        System.out.printf("Loaded painting id: %s of size %s x %s%n", canvasId, img.getWidth(), img.getHeight());
+        CrazyPainting.debug("Loaded painting id: {} of size {} x {}", canvasId, img.getWidth(), img.getHeight());
         PaintingSize size = PaintingSize.fromPixels(img.getWidth(), img.getHeight());
         return new PaintingData(bytes.get(), size, new PaintingId(canvasId));
 

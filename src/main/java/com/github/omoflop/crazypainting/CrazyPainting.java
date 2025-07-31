@@ -11,8 +11,8 @@ import org.apache.logging.log4j.Logger;
 import java.util.HashMap;
 
 public class CrazyPainting implements ModInitializer {
-    public static final Logger LOGGER = LogManager.getLogger("crazy_painting");
-    public static final boolean SHOW_NETWORK_LOGS = true;
+    public static final Logger LOGGER = LogManager.getLogger("CrazyPainting");
+    public static final boolean SHOW_DEBUG_LOGS = true;
 
     public static final Item GLOW_ITEM = Items.GLOW_INK_SAC;
     public static final Item UNGLOW_ITEM = Items.INK_SAC;
@@ -64,6 +64,11 @@ public class CrazyPainting implements ModInitializer {
             TRANSPARENT
     };
 
+    public static void debug(String s, Object... args) {
+        if (!SHOW_DEBUG_LOGS) return;
+        LOGGER.info(s, args);
+    }
+
     @Override
     public void onInitialize() {
         CrazyNetworking.register();
@@ -71,6 +76,7 @@ public class CrazyPainting implements ModInitializer {
         CrazyItems.register();
         CrazyEntities.register();
         CrazyRecipes.register();
+        CrazySounds.register();
     }
 
     public static Identifier id(String path) {

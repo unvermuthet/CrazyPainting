@@ -10,7 +10,9 @@ import com.github.omoflop.crazypainting.network.types.PaintingData;
 import com.github.omoflop.crazypainting.network.types.PaintingSize;
 import net.minecraft.block.SideShapeType;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.EquippableComponent;
 import net.minecraft.component.type.LoreComponent;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.DecorationItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -38,7 +40,10 @@ public class CanvasItem extends Item implements Identifiable {
     public final byte height;
 
     public CanvasItem(String registryName, byte width, byte height) {
-        super(new Settings().maxCount(1).registryKey(Identifiable.key(registryName)).component(DataComponentTypes.LORE, new LoreComponent(List.of(), List.of(Text.literal(width + "x" + height).formatted(Formatting.WHITE)))));
+        super(new Settings().maxCount(1).registryKey(Identifiable.key(registryName))
+                .component(DataComponentTypes.LORE, new LoreComponent(List.of(), List.of(Text.literal(width + "x" + height).formatted(Formatting.WHITE))))
+                .component(DataComponentTypes.EQUIPPABLE, EquippableComponent.builder(EquipmentSlot.HEAD).swappable(false).equipOnInteract(false).build())
+        );
         this.id = CrazyPainting.id(registryName);
         this.width = width;
         this.height = height;

@@ -12,7 +12,7 @@ public class PaintingUpdateHandler implements ClientPlayNetworking.PlayPayloadHa
         CanvasTextureManager.receive(packet.id(), packet.data());
 
         System.out.println("Received painting update packet");
-        if (CrazyPainting.SHOW_NETWORK_LOGS)
+        if (CrazyPainting.SHOW_DEBUG_LOGS)
             CrazyPainting.LOGGER.log(Level.ALL, "Received update packet, for id: %s".formatted(packet.id()));
     }
 }

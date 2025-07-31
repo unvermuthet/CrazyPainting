@@ -1,7 +1,5 @@
 package com.github.omoflop.crazypainting.client.screens.editor;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.image.BufferedImage;

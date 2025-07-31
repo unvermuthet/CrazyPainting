@@ -1,5 +1,6 @@
 package com.github.omoflop.crazypainting.client.texture;
 
+import com.github.omoflop.crazypainting.CrazyPainting;
 import com.github.omoflop.crazypainting.items.CanvasItem;
 import com.github.omoflop.crazypainting.network.c2s.RequestPaintingC2S;
 import com.github.omoflop.crazypainting.network.types.PaintingData;
@@ -19,25 +20,17 @@ public class CanvasTextureManager {
     private static final List<Integer> UPDATABLE_PAINTING_IDS = new ArrayList<>();
 
     public static Optional<CanvasTexture> request(int id) {
-        if (TEXTURE_MAP.containsKey(id)) return Optional.of(TEXTURE_MAP.get(id));
-        if (AWAITED_TEXTURES.contains(id)) return Optional.empty();
+        if (!UPDATABLE_PAINTING_IDS.contains(id)) {
+            if (TEXTURE_MAP.containsKey(id)) return Optional.of(TEXTURE_MAP.get(id));
+            if (AWAITED_TEXTURES.contains(id)) return Optional.empty();
+        }
 
         AWAITED_TEXTURES.add(id);
+        UPDATABLE_PAINTING_IDS.remove((Object) id);
         ClientPlayNetworking.send(new RequestPaintingC2S(id));
+        CrazyPainting.debug("Sent request for painting id '{}'", id);
 
         return Optional.ofNullable(TEXTURE_MAP.get(id));
-    }
-
-    public static void createNew(int id, CanvasItem canvasType) {
-        TEXTURE_MAP.put(id, new CanvasTexture(canvasType, id));
-        if (AWAITED_TEXTURES.contains(id))
-            AWAITED_TEXTURES.remove(id);
-    }
-
-    public static void createNew(int id, PaintingSize size) {
-        TEXTURE_MAP.put(id, new CanvasTexture(size.width(), size.height(), id, true));
-        if (AWAITED_TEXTURES.contains(id))
-            AWAITED_TEXTURES.remove(id);
     }
 
     public static void unload(int canvasId) {
@@ -66,9 +59,9 @@ public class CanvasTextureManager {
         }
 
         try {
-            texture.updateTexture(data.readPixelArray(), -1);
+            texture.updateTexture(data.readPixelArray());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            CrazyPainting.debug("Failed to update texture for painting id '{}', {}", canvasId, e);
         }
 
         return texture;
@@ -86,9 +79,6 @@ public class CanvasTextureManager {
     }
 
     public static void markAsUpdatable(int id) {
-        //if (UPDATABLE_PAINTING_IDS.contains(id)) return;
-        //UPDATABLE_PAINTING_IDS.add(id);
-        request(id);
-
+        UPDATABLE_PAINTING_IDS.add(id);
     }
 }

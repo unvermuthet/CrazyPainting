@@ -9,7 +9,6 @@ import com.github.omoflop.crazypainting.state.CanvasManager;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import org.apache.logging.log4j.Level;
 
 import java.io.IOException;
@@ -73,7 +72,7 @@ public class ServerPaintingChangeEventHandler implements ServerPlayNetworking.Pl
 
 
     private static void printFail(ServerPlayerEntity player, ChangeKey key, PaintingId id, String extras, Object... params) {
-        if (!CrazyPainting.SHOW_NETWORK_LOGS) return;;
+        if (!CrazyPainting.SHOW_DEBUG_LOGS) return;;
         CrazyPainting.LOGGER.log(Level.ERROR, "Failed to receive painting data from %s. Key: '%s', Id: '%s', Reason: %s".formatted(
                 player.getName().getString(),
                 Arrays.toString(key.key()),

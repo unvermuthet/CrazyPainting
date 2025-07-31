@@ -10,7 +10,6 @@ import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
-import org.apache.logging.log4j.Level;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

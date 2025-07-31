@@ -49,9 +49,13 @@ public class CanvasEntity extends AbstractDecorationEntity {
 
     @Override
     public ActionResult interact(PlayerEntity player, Hand hand) {
-        if (getHeldItemStack().getItem() instanceof CanvasItem canvasItem && canvasItem.width == canvasItem.height) {
+        if (getHeldItemStack().getItem() instanceof CanvasItem canvasItem) {
 
-            setRotation((byte) (getItemRotation() + 1));
+            if (canvasItem.width == canvasItem.height) {
+                setRotation((byte) (getItemRotation() + 1));
+            } else {
+                setRotation((byte) (getItemRotation() + 2));
+            }
             return ActionResult.SUCCESS;
         }
         return super.interact(player, hand);
@@ -109,6 +113,11 @@ public class CanvasEntity extends AbstractDecorationEntity {
     }
 
     @Override
+    public @Nullable ItemStack getPickBlockStack() {
+        return getHeldItemStack().copy();
+    }
+
+    @Override
     public void onPlace() {
 
     }
@@ -120,6 +129,7 @@ public class CanvasEntity extends AbstractDecorationEntity {
 
     @Override
     public void onBreak(ServerWorld world, @Nullable Entity breaker) {
+        if (breaker instanceof PlayerEntity player && player.isCreative()) return;
         dropStack(world, dataTracker.get(CANVAS_ITEM));
     }
 

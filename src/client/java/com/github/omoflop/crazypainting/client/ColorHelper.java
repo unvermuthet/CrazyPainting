@@ -1,6 +1,7 @@
 package com.github.omoflop.crazypainting.client;
 
 import com.github.omoflop.crazypainting.CrazyPainting;
+import net.minecraft.client.render.item.model.special.ShieldModelRenderer;
 
 import java.awt.*;
 
@@ -48,4 +49,52 @@ public final class ColorHelper {
         return create((int)(r * 255), (int)(g * 255), (int)(b * 255), (int)(a * 255));
     }
 
+    public static int contrast(int color) {
+        Color col = new Color(color, true);
+
+        double lum = (0.299 * col.getRed() + 0.587 * col.getGreen() + 0.114 * col.getBlue())/255;
+
+        if (lum > 0.5) {
+            return CrazyPainting.BLACK;
+        } else {
+            return CrazyPainting.WHITE;
+        }
+    }
+
+    public static int antiContrast(int color) {
+        Color col = new Color(color, true);
+
+        double lum = (0.299 * col.getRed() + 0.587 * col.getGreen() + 0.114 * col.getBlue())/255;
+
+        if (lum > 0.5) {
+            return CrazyPainting.WHITE;
+        } else {
+            return CrazyPainting.BLACK;
+        }
+    }
+
+    public static String hexString(int color) {
+        Color col = new Color(color, true);
+        StringBuilder sb = new StringBuilder("#");
+
+        String r = Integer.toHexString(col.getRed());
+        String g = Integer.toHexString(col.getGreen());
+        String b = Integer.toHexString(col.getBlue());
+
+        if (r.length() == 1) sb.append('0');
+        sb.append(r);
+        if (g.length() == 1) sb.append('0');
+        sb.append(g);
+        if (b.length() == 1) sb.append('0');
+        sb.append(b);
+
+        if (col.getAlpha() != 0xFF) {
+            String a = Integer.toHexString(col.getBlue());
+
+            if (a.length() == 1) sb.append('0');
+            sb.append(a);
+        }
+
+        return sb.toString();
+    }
 }

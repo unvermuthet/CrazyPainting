@@ -15,7 +15,7 @@ import static com.github.omoflop.crazypainting.CrazyPainting.LOGGER;
 
 public class NetSync {
     private final CanvasTexture texture;
-    private final Supplier<String> titleGetter;
+    private final Runnable closeFunction;
     private final ChangeKey changeKey;
     private final AtomicBoolean hasChanges;
     private final int easelEntityId;
@@ -24,10 +24,10 @@ public class NetSync {
 
     private int updateCooldown = 0;
 
-    public NetSync(CanvasTexture texture, ChangeKey changeKey, Supplier<String> titleGetter, AtomicBoolean hasChanges, int easelEntityId) {
+    public NetSync(CanvasTexture texture, ChangeKey changeKey, Runnable closeFunction, AtomicBoolean hasChanges, int easelEntityId) {
         this.texture = texture;
         this.changeKey = changeKey;
-        this.titleGetter = titleGetter;
+        this.closeFunction = closeFunction;
         this.hasChanges = hasChanges;
         this.easelEntityId = easelEntityId;
     }
@@ -47,16 +47,22 @@ public class NetSync {
         PaintingData data = texture.toData();
         if (data != null) {
             texture.updateTexture();
-            ClientPlayNetworking.send(new PaintingChangeEvent(Optional.of(changeKey), data, titleGetter.get(), easelEntityId));
+            ClientPlayNetworking.send(new PaintingChangeEvent(Optional.of(changeKey), data, "", easelEntityId));
         } else {
             LOGGER.error("Failed to send painting change update packet");
         }
     }
 
-    public void signAndClose(PaintingData data) {
+    public void signAndClose(String title) {
         texture.updateTexture();
-        ClientPlayNetworking.send(new PaintingChangeEvent(Optional.of(changeKey), data, titleGetter.get(), easelEntityId));
-        ClientPlayNetworking.send(new SignPaintingC2S(changeKey, data.id(), easelEntityId, titleGetter.get()));
+        PaintingData data = texture.toData();
+        if (data == null) {
+            return;
+        }
+
+        ClientPlayNetworking.send(new PaintingChangeEvent(Optional.of(changeKey), data, title, easelEntityId));
+        ClientPlayNetworking.send(new SignPaintingC2S(changeKey, data.id(), easelEntityId, title));
+        closeFunction.run();
 
         closed = true;
     }

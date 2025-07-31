@@ -1,13 +1,16 @@
 package com.github.omoflop.crazypainting.client.screens;
 
 import com.github.omoflop.crazypainting.CrazyPainting;
+import com.github.omoflop.crazypainting.client.ColorHelper;
 import com.github.omoflop.crazypainting.network.types.PaintingData;
 import com.github.omoflop.crazypainting.network.types.PaintingSize;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 
+import java.awt.*;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class PaintingViewerScreen extends Screen {
     private final int[] pixels;

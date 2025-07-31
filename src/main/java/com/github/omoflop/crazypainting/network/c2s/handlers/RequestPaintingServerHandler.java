@@ -8,7 +8,6 @@ import com.github.omoflop.crazypainting.state.CanvasManager;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import org.apache.logging.log4j.Level;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -22,15 +21,17 @@ public class RequestPaintingServerHandler implements ServerPlayNetworking.PlayPa
         PaintingData data;
         try {
             data = CanvasManager.load(packet.id(), server);
-        } catch (IOException e) {
-            if (CrazyPainting.SHOW_NETWORK_LOGS) {
-                CrazyPainting.LOGGER.log(Level.ALL, "Failed to load painting from disk after player requested it...");
+            if (data == null) {
+                CrazyPainting.debug("Client {} requested painting id '{}' which is not saved to disk. Sending nothing.", ctx.player().getNameForScoreboard(), packet.id());
+            } else {
+                CrazyPainting.debug("Sending client {} painting of size: {}", ctx.player().getNameForScoreboard(), data.size().toString());
+                ServerPlayNetworking.send(player, new PaintingUpdateS2C(packet.id(), data));
             }
-            return;
+        } catch (IOException e) {
+            CrazyPainting.debug("Failed to load painting from disk after player requested it... {}", e);
         }
 
-        System.out.println("Sending client painting of size: " + data.size().toString());
-        ServerPlayNetworking.send(player, new PaintingUpdateS2C(packet.id(), data));
+
 
     }
 }

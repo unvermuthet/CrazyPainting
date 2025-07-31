@@ -21,9 +21,31 @@
   "gui.crazypainting.painting_editor.brush_settings": "Brush Settings",
   "gui.crazypainting.painting_editor.opacity": "%s Opacity",
   "gui.crazypainting.painting_editor.sign": "Sign Painting",
+  "gui.crazypainting.painting_editor.color_picker": "Color Picker",
+
+  "gui.crazypainting.painting_editor.tutorial.count": "14",
+  "gui.crazypainting.painting_editor.tutorial.1": "Palette:",
+  "gui.crazypainting.painting_editor.tutorial.2": "Left click to select primary color, right click to select secondary",
+  "gui.crazypainting.painting_editor.tutorial.3": "Pick one of four opacity values for your brush by left clicking",
+  "gui.crazypainting.painting_editor.tutorial.4": "Pressing the color picker button or 'i' will enable the color picker.",
+  "gui.crazypainting.painting_editor.tutorial.5": "Pressing the color picker again or 'b' will disable it.",
+  "gui.crazypainting.painting_editor.tutorial.6": "Brushes:",
+  "gui.crazypainting.painting_editor.tutorial.7": "Left click a category to view all brushes under that category.",
+  "gui.crazypainting.painting_editor.tutorial.8": "Hover over any brush to view it's name, and right click to enable it.",
+  "gui.crazypainting.painting_editor.tutorial.9": "Resource packs can add new brushes as well. See mod page for more info.",
+  "gui.crazypainting.painting_editor.tutorial.10": "Painting:",
+  "gui.crazypainting.painting_editor.tutorial.11": "Hold left click and drag to paint, right click will paint with your secondary color.",
+  "gui.crazypainting.painting_editor.tutorial.12": "Press CTRL+Z to undo. Also, hold middle mouse button and drag to pan the image.",
+  "gui.crazypainting.painting_editor.tutorial.13": "Signing:",
+  "gui.crazypainting.painting_editor.tutorial.14": "When your painting is complete, type a name into the top text area, then press the sign button at the bottom.",
+
   "gui.crazypainting.painting_viewer.title": "Untitled Painting",
 
   "chat.crazypainting.canvas_update_error": "Failed to update painting",
   "chat.crazypainting.canvas_sign_error": "Paintings cannot be edited once it has been signed",
-  "chat.crazypainting.canvas_save_error": "Something went wrong when saving your painting"
+  "chat.crazypainting.canvas_save_error": "Something went wrong when saving your painting",
+
+  "subtitles.crazypainting.brush_use": "Paint Brush Used",
+  "subtitles.crazypainting.color_picker_use": "Color Picker Used",
+  "subtitles.crazypainting.undo": "Changes Undone"
 }

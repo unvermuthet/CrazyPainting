@@ -6,10 +6,10 @@ import com.github.omoflop.crazypainting.content.CrazyComponents;
 import com.github.omoflop.crazypainting.content.CrazyItems;
 import com.github.omoflop.crazypainting.items.CanvasItem;
 import com.github.omoflop.crazypainting.items.PaletteItem;
+import com.github.omoflop.crazypainting.network.ChangeRecord;
 import com.github.omoflop.crazypainting.network.event.PaintingChangeEvent;
 import com.github.omoflop.crazypainting.network.s2c.UpdateEaselCanvasIdS2C;
 import com.github.omoflop.crazypainting.network.types.ChangeKey;
-import com.github.omoflop.crazypainting.network.ChangeRecord;
 import com.github.omoflop.crazypainting.network.types.PaintingId;
 import com.github.omoflop.crazypainting.state.CanvasManager;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -45,6 +45,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -74,50 +75,27 @@ public class EaselEntity extends LivingEntity {
 
     @Override
     public ActionResult interact(PlayerEntity player, Hand hand) {
+        // Ignore offhand interactions
         if (hand == Hand.OFF_HAND) return ActionResult.PASS;
 
         ItemStack displayStack = this.getDisplayStack();
         ItemStack playerHeldStack = player.getStackInHand(hand);
-        boolean hasPaletteInEitherHand =
-                player.getStackInHand(Hand.MAIN_HAND).getItem() instanceof PaletteItem ||
-                player.getStackInHand(Hand.OFF_HAND).getItem() instanceof PaletteItem;
 
-        boolean itemIsCanvas = displayStack.getItem() instanceof CanvasItem;
+        boolean displayItemIsCanvas = displayStack.getItem() instanceof CanvasItem;
 
+        // If both the display stand is empty and the player held stand is empty, return early
         if (displayStack.isEmpty() && playerHeldStack.isEmpty()) return ActionResult.FAIL;
 
-        if (itemIsCanvas) {
-            boolean holdingGlowItem = playerHeldStack.getItem() == CrazyPainting.GLOW_ITEM;
-            boolean holdingUnGlowItem = playerHeldStack.getItem() == CrazyPainting.UNGLOW_ITEM;
+        // Return true if the player uses any ink on the canvas
+        if (displayItemIsCanvas && checkInk(playerHeldStack, displayStack, player)) return ActionResult.SUCCESS;
 
-            if (holdingGlowItem || holdingUnGlowItem) {
-                CanvasDataComponent data = displayStack.get(CrazyComponents.CANVAS_DATA);
-
-                boolean success = false;
-                if (data == null) {
-                    data = CanvasDataComponent.DEFAULT.withGlow(holdingGlowItem);
-
-                    success = true;
-                } else if (data.glow() == holdingUnGlowItem) {
-                    data = data.withGlow(holdingGlowItem);
-                    success = true;
-                }
-
-                if (success) {
-                    displayStack.set(CrazyComponents.CANVAS_DATA, data);
-                    player.playSound(holdingGlowItem ? SoundEvents.ITEM_GLOW_INK_SAC_USE : SoundEvents.ITEM_INK_SAC_USE);
-                    playerHeldStack.decrementUnlessCreative(1, player);
-                    return ActionResult.SUCCESS;
-                }
-            }
-        }
-
+        // If there's no item and the player is holding one, transfer the item from the player into this
         if (displayStack.isEmpty()) {
             if (!playerHeldStack.isEmpty()) {
-                setDisplayStack(playerHeldStack);
+                setDisplayStack(playerHeldStack.copy());
                 player.setStackInHand(hand, ItemStack.EMPTY);
             }
-        } else if (!itemIsCanvas || player.isSneaking()) {
+        } else if (!displayItemIsCanvas || player.isSneaking()) {
             if (hand == Hand.MAIN_HAND && playerHeldStack.isEmpty()) {
                 player.setStackInHand(hand, displayStack);
                 setDisplayStack(ItemStack.EMPTY);
@@ -125,7 +103,9 @@ public class EaselEntity extends LivingEntity {
         } else if (displayStack.getItem() instanceof CanvasItem canvasItem) {
             if (!(player instanceof ServerPlayerEntity serverPlayer)) return ActionResult.SUCCESS;
 
-            // TODO: Stuff
+            boolean hasPaletteInEitherHand =
+                    player.getStackInHand(Hand.MAIN_HAND).getItem() instanceof PaletteItem ||
+                    player.getStackInHand(Hand.OFF_HAND).getItem() instanceof PaletteItem;
 
             boolean edit = hasPaletteInEitherHand;
             if (CanvasItem.isSigned(displayStack)) edit = false;
@@ -151,9 +131,6 @@ public class EaselEntity extends LivingEntity {
                 for (ServerPlayerEntity serverPlayerEntity : server.getPlayerManager().getPlayerList()) {
                     ServerPlayNetworking.send(serverPlayerEntity, new UpdateEaselCanvasIdS2C(this.getId(), new PaintingId(canvasId)));
                 }
-
-
-
             } catch (IOException ignored) {
 
             }
@@ -161,6 +138,35 @@ public class EaselEntity extends LivingEntity {
 
 
         return super.interact(player, hand);
+    }
+
+    private boolean checkInk(ItemStack playerHeldStack, ItemStack displayStack, PlayerEntity player) {
+        boolean holdingGlowItem = playerHeldStack.getItem() == CrazyPainting.GLOW_ITEM;
+        boolean holdingUnGlowItem = playerHeldStack.getItem() == CrazyPainting.UNGLOW_ITEM;
+
+        // Check if the player is using
+        if (holdingGlowItem || holdingUnGlowItem) {
+            CanvasDataComponent data = displayStack.get(CrazyComponents.CANVAS_DATA);
+
+            boolean success = false;
+            if (data == null) {
+                data = CanvasDataComponent.DEFAULT.withGlow(holdingGlowItem);
+
+                success = true;
+            } else if (data.glow() == holdingUnGlowItem) {
+                data = data.withGlow(holdingGlowItem);
+                success = true;
+            }
+
+            if (success) {
+                displayStack.set(CrazyComponents.CANVAS_DATA, data);
+                player.playSound(holdingGlowItem ? SoundEvents.ITEM_GLOW_INK_SAC_USE : SoundEvents.ITEM_INK_SAC_USE);
+                playerHeldStack.decrementUnlessCreative(1, player);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -323,6 +329,13 @@ public class EaselEntity extends LivingEntity {
 
     }
 
+    @Override
+    public @Nullable ItemStack getPickBlockStack() {
+        ItemStack display = getDisplayStack();
+        if (display.isEmpty()) return new ItemStack(CrazyItems.EASEL_ITEM);
+        return display.copy();
+    }
+
     private void playBreakSound() {
         this.getWorld().playSound((Entity)null, this.getX(), this.getY(), this.getZ(), SoundEvents.ENTITY_ARMOR_STAND_BREAK, this.getSoundCategory(), 1.0F, 1.0F);
     }
@@ -332,10 +345,6 @@ public class EaselEntity extends LivingEntity {
     }
 
     public void setDisplayStack(ItemStack value) {
-        if (!value.isEmpty()) {
-            value = value.copyWithCount(1);
-        }
-
         this.setAsStackHolder(value);
         this.getDataTracker().set(CANVAS_ITEM, value);
     }

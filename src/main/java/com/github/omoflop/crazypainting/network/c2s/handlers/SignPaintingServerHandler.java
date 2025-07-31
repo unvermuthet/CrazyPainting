@@ -17,14 +17,14 @@ public class SignPaintingServerHandler implements ServerPlayNetworking.PlayPaylo
 
         Entity entity = player.getWorld().getEntityById(packet.easelEntityId());
         if (!(entity instanceof EaselEntity easel)) {
-            if (CrazyPainting.SHOW_NETWORK_LOGS) CrazyPainting.LOGGER.warn("Received invalid entity id for sign painting packet");
+            if (CrazyPainting.SHOW_DEBUG_LOGS) CrazyPainting.LOGGER.warn("Received invalid entity id for sign painting packet");
             return;
         }
 
         ItemStack displayStack = easel.getDisplayStack();
         CanvasDataComponent data = displayStack.get(CrazyComponents.CANVAS_DATA);
         if (data == null) {
-            if (CrazyPainting.SHOW_NETWORK_LOGS) CrazyPainting.LOGGER.warn("Tried to sign a canvas with no data");
+            if (CrazyPainting.SHOW_DEBUG_LOGS) CrazyPainting.LOGGER.warn("Tried to sign a canvas with no data");
             return;
         }
 

@@ -62,6 +62,7 @@ public record CanvasDataComponent(int id, boolean glow, String signedBy, String 
 
     @Override
     public void appendTooltip(Item.TooltipContext context, Consumer<Text> textConsumer, TooltipType type, ComponentsAccess components) {
+
         CanvasDataComponent data = components.get(CrazyComponents.CANVAS_DATA);
         assert data != null;
         if (type.isAdvanced()) {

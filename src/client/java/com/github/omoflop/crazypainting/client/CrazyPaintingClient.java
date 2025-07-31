@@ -21,10 +21,13 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.client.render.item.model.special.SpecialModelTypes;
 import net.minecraft.client.render.item.property.bool.BooleanProperties;
 import net.minecraft.resource.ResourceType;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 
 public class CrazyPaintingClient implements ClientModInitializer {
 
@@ -58,5 +61,18 @@ public class CrazyPaintingClient implements ClientModInitializer {
 
 
 
+
+
+
+    public static void play(SoundEvent sound, float pitch) {
+        play(sound, 0.5f, pitch);
+    }
+    public static void play(SoundEvent sound, float volume, float pitch) {
+        MinecraftClient.getInstance().player.playSound(sound, volume, pitch);
+    }
+
+    public static void click(float pitch) {
+        play(SoundEvents.UI_BUTTON_CLICK.value(), pitch);
+    }
 
 }

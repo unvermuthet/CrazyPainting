@@ -1,24 +1,23 @@
 package com.github.omoflop.crazypainting.client.network;
 
+import com.github.omoflop.crazypainting.client.screens.PaintingEditorScreen;
 import com.github.omoflop.crazypainting.client.texture.CanvasTexture;
 import com.github.omoflop.crazypainting.client.texture.CanvasTextureManager;
-import com.github.omoflop.crazypainting.client.screens.PaintingEditorScreen;
 import com.github.omoflop.crazypainting.client.screens.PaintingViewerScreen;
 import com.github.omoflop.crazypainting.network.event.PaintingChangeEvent;
 import com.github.omoflop.crazypainting.network.types.ChangeKey;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
-import org.apache.logging.log4j.Level;
 
 import java.util.Arrays;
 
 import static com.github.omoflop.crazypainting.CrazyPainting.LOGGER;
-import static com.github.omoflop.crazypainting.CrazyPainting.SHOW_NETWORK_LOGS;
+import static com.github.omoflop.crazypainting.CrazyPainting.SHOW_DEBUG_LOGS;
 
 public class ClientPaintingChangeHandler implements ClientPlayNetworking.PlayPayloadHandler<PaintingChangeEvent> {
     @Override
     public void receive(PaintingChangeEvent packet, ClientPlayNetworking.Context context) {
-        if (SHOW_NETWORK_LOGS) {
+        if (SHOW_DEBUG_LOGS) {
             LOGGER.info( "Received painting change");
 
             LOGGER.info("Change present? {}", packet.change().isPresent());

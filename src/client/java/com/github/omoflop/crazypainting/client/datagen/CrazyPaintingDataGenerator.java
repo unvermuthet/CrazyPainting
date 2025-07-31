@@ -11,6 +11,7 @@ public class CrazyPaintingDataGenerator implements DataGeneratorEntrypoint {
 
         pack.addProvider(CrazyModelProvider::new);
         pack.addProvider(CrazyRecipeProvider::new);
+        pack.addProvider(CrazySoundProvider::new);
     }
 
 }

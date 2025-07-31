@@ -38,7 +38,6 @@ public class CanvasTexture implements AutoCloseable {
 
     private boolean ready = false;
     private boolean editable;
-    public int version = -1;
     private boolean registered = false;
     private boolean isClosed = false;
 
@@ -83,16 +82,11 @@ public class CanvasTexture implements AutoCloseable {
     }
 
     public void updateTexture() {
-        updateTexture(pixels, -1);
+        updateTexture(pixels);
     }
 
-    public void updateTexture(int[] newPixels, int version) {
+    public void updateTexture(int[] newPixels) {
         if (isClosed) return;
-
-        // Don't bother updating if this is already the most up-to-date version
-        // Ignored if version is -1, meaning the client is updating it.
-        if (version != -1 && this.version >= version) return;
-        this.version = version;
 
         // If the data is invalid then just ignore it (failsafe)
         if (width * height != newPixels.length) {
