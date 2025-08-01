@@ -52,11 +52,11 @@ public class PaintingEditorScreen extends AbstractPaintingScreen {
     protected void init() {
         super.init();
 
-        addWidget(sign);
         addWidget(canvasWidget);
         addWidget(colorPicker);
         addWidget(brushPicker);
         addWidget(help);
+        addWidget(sign);
     }
 
     @Override
