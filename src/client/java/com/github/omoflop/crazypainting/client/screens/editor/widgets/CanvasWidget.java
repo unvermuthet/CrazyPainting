@@ -12,6 +12,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.sound.SoundEvents;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.github.omoflop.crazypainting.client.screens.PaintingEditorScreen.EDITOR_TEXTURE_ID;
@@ -33,10 +34,10 @@ public class CanvasWidget extends EditorWidget implements Renderable, MouseListe
     private boolean leftJustDown;
     private boolean rightJustDown;
 
-    public CanvasWidget(EditorState state, CanvasTexture texture, AtomicBoolean hasChanges) {
+    public CanvasWidget(EditorState state, CanvasTexture texture, AtomicBoolean hasChanges, Collection<Integer> colors) {
         this.state = state;
         this.texture = texture;
-        this.drawHelper = new DrawHelper(state, texture, hasChanges);
+        this.drawHelper = new DrawHelper(state, texture, hasChanges, colors);
     }
 
     @Override
@@ -150,9 +151,7 @@ public class CanvasWidget extends EditorWidget implements Renderable, MouseListe
 
     @Override
     public boolean onMouseReleased(double mouseX, double mouseY, int button) {
-        if (panStart) {
-            panStart = false;
-        }
+        panStart = false;
 
         if (button == 0) leftDown = false;
         if (button == 1) rightDown = false;

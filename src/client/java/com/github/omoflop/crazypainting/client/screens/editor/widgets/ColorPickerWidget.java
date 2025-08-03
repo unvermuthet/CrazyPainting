@@ -32,11 +32,9 @@ public class ColorPickerWidget extends EditorWidget implements Renderable, Mouse
     private boolean leftJustPressed = false;
     private boolean rightJustPressed = false;
 
-    public ColorPickerWidget(EditorState state, ItemStack paletteStack) {
+    public ColorPickerWidget(EditorState state, Collection<Integer> colors) {
         this.state = state;
-
-        if (paletteStack.isEmpty() || !(paletteStack.getItem() instanceof PaletteItem)) colors = List.of();
-        else colors = PaletteItem.getColors(paletteStack);
+        this.colors = colors;
 
         textRenderer = MinecraftClient.getInstance().textRenderer;
     }
@@ -57,17 +55,22 @@ public class ColorPickerWidget extends EditorWidget implements Renderable, Mouse
     }
 
     private void drawBottomArea(DrawContext context) {
-        final int dispSize = (int) (textRenderer.fontHeight * 1.5f);
-        int y2 = bottom() - dispSize * 2;
-        Text text = Text.literal(ColorHelper.hexString(state.primaryColor));
-        drawColorBox(context, x, y2, width, dispSize, CrazyPainting.LIGHT_GRAY, state.primaryColor);
-        context.drawText(textRenderer, text, x + width/2 - textRenderer.getWidth(text) / 2, y2 + 3, ColorHelper.contrast(state.primaryColor), false);
+        final int size = (int) (textRenderer.fontHeight * 1.5f);
+        int y2 = bottom() - size * 2;
 
-        y2 += dispSize;
-        text = Text.literal(ColorHelper.hexString(state.secondaryColor));
-        drawColorBox(context, x, y2, width, dispSize, CrazyPainting.GRAY, state.secondaryColor);
-        context.drawText(textRenderer, text, x + width/2 - textRenderer.getWidth(text)/2, y2+3, ColorHelper.contrast(state.secondaryColor), false);
+        if (colors.contains(state.primaryColor)) {
+            Text text = Text.literal(ColorHelper.hexString(state.primaryColor));
+            drawColorBox(context, x, y2, width, size, CrazyPainting.LIGHT_GRAY, state.primaryColor);
+            context.drawText(textRenderer, text, x + width/2 - textRenderer.getWidth(text) / 2, y2 + 3, ColorHelper.contrast(state.primaryColor), false);
 
+        }
+
+        if (colors.contains(state.secondaryColor)) {
+            y2 += size;
+            Text text = Text.literal(ColorHelper.hexString(state.secondaryColor));
+            drawColorBox(context, x, y2, width, size, CrazyPainting.GRAY, state.secondaryColor);
+            context.drawText(textRenderer, text, x + width/2 - textRenderer.getWidth(text)/2, y2+3, ColorHelper.contrast(state.secondaryColor), false);
+        }
 
     }
 

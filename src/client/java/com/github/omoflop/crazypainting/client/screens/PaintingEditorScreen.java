@@ -5,6 +5,7 @@ import com.github.omoflop.crazypainting.client.screens.editor.widgets.*;
 import com.github.omoflop.crazypainting.client.screens.editor.NetSync;
 import com.github.omoflop.crazypainting.client.screens.editor.types.EditorState;
 import com.github.omoflop.crazypainting.client.texture.CanvasTexture;
+import com.github.omoflop.crazypainting.items.PaletteItem;
 import com.github.omoflop.crazypainting.network.event.PaintingChangeEvent;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -12,9 +13,12 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Environment(EnvType.CLIENT)
@@ -39,9 +43,14 @@ public class PaintingEditorScreen extends AbstractPaintingScreen {
         AtomicBoolean hasChanges = new AtomicBoolean(false);
         netSync = new NetSync(texture, event.change().orElseThrow(), this::close, hasChanges, easelEntityId);
 
+        ItemStack paletteStack = player.getEquippedStack(EquipmentSlot.MAINHAND);
+        Collection<Integer> colors;
+        if (paletteStack.isEmpty() || !(paletteStack.getItem() instanceof PaletteItem)) colors = List.of();
+        else colors = PaletteItem.getColors(paletteStack);
+
         EditorState state = new EditorState();
-        canvasWidget = new CanvasWidget(state, texture, hasChanges);
-        colorPicker  = new ColorPickerWidget(state, player.getEquippedStack(EquipmentSlot.MAINHAND));
+        canvasWidget = new CanvasWidget(state, texture, hasChanges, colors);
+        colorPicker  = new ColorPickerWidget(state, colors);
         brushPicker  = new BrushPickerWidget(state);
         sign = new SignWidget(state, netSync);
         help  = new HelpWidget();

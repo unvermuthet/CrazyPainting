@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import net.minecraft.util.math.random.Random;
 
+import java.util.Collection;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -17,18 +18,22 @@ public class DrawHelper {
     private final EditorState state;
     private final CanvasTexture canvasTexture;
     private final AtomicBoolean hasChanges;
+    private final Collection<Integer> colors;
 
     private Int2IntMap currentUndo;
     private int soundCooldown;
 
-    public DrawHelper(EditorState state, CanvasTexture canvasTexture, AtomicBoolean hasChanges) {
+    public DrawHelper(EditorState state, CanvasTexture canvasTexture, AtomicBoolean hasChanges, Collection<Integer> colors) {
         this.state = state;
         this.canvasTexture = canvasTexture;
         this.hasChanges = hasChanges;
+        this.colors = colors;
     }
 
     public void useBrush(int x, int y, int color) {
         if (state.brushType == null) return;
+
+        if (!colors.contains(color)) return;
 
         state.brushType.iteratePatternCentered(x, y, (px, py, alpha) -> {
             if (!canvasTexture.isPixelInBounds(px, py)) return;
@@ -61,8 +66,6 @@ public class DrawHelper {
 
     public void endStroke() {
         if (currentUndo == null || currentUndo.isEmpty()) return;
-
-        System.out.println(currentUndo.size());
 
         undoHistory.push(new UndoEntry(currentUndo));
         currentUndo = null;
