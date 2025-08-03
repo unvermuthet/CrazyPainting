@@ -6,15 +6,17 @@ import com.github.omoflop.crazypainting.client.screens.editor.BrushType;
 import com.github.omoflop.crazypainting.content.CrazySounds;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+
 import static com.github.omoflop.crazypainting.client.CrazyPaintingClient.play;
 
 public class EditorState {
     private static @Nullable EditorState last;
 
-    public EditorState() {
+    public EditorState(Collection<Integer> colors) {
         if (last != null) {
-            primaryColor = last.primaryColor;
-            secondaryColor = last.secondaryColor;
+            if (colors != null && colors.contains(last.primaryColor)) primaryColor = last.primaryColor;
+            if (colors != null && colors.contains(last.secondaryColor)) secondaryColor = last.secondaryColor;
             opacity = last.opacity;
             brushCategory = last.brushCategory;
             brushType = last.brushType;
@@ -24,8 +26,8 @@ public class EditorState {
         last = this;
     }
 
-    public int primaryColor;
-    public int secondaryColor;
+    public int primaryColor = -1;
+    public int secondaryColor = -1;
     public float opacity = 1f;
 
     public String brushCategory = "square";

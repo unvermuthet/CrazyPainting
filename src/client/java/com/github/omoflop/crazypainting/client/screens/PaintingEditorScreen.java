@@ -48,8 +48,8 @@ public class PaintingEditorScreen extends AbstractPaintingScreen {
         if (paletteStack.isEmpty() || !(paletteStack.getItem() instanceof PaletteItem)) colors = List.of();
         else colors = PaletteItem.getColors(paletteStack);
 
-        EditorState state = new EditorState();
-        canvasWidget = new CanvasWidget(state, texture, hasChanges, colors);
+        EditorState state = new EditorState(colors);
+        canvasWidget = new CanvasWidget(state, texture, hasChanges);
         colorPicker  = new ColorPickerWidget(state, colors);
         brushPicker  = new BrushPickerWidget(state);
         sign = new SignWidget(state, netSync);

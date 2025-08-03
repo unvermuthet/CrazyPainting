@@ -34,10 +34,10 @@ public class CanvasWidget extends EditorWidget implements Renderable, MouseListe
     private boolean leftJustDown;
     private boolean rightJustDown;
 
-    public CanvasWidget(EditorState state, CanvasTexture texture, AtomicBoolean hasChanges, Collection<Integer> colors) {
+    public CanvasWidget(EditorState state, CanvasTexture texture, AtomicBoolean hasChanges) {
         this.state = state;
         this.texture = texture;
-        this.drawHelper = new DrawHelper(state, texture, hasChanges, colors);
+        this.drawHelper = new DrawHelper(state, texture, hasChanges);
     }
 
     @Override
@@ -84,7 +84,7 @@ public class CanvasWidget extends EditorWidget implements Renderable, MouseListe
                     }
 
                 } else {
-                    drawHelper.useBrush(cursorX, cursorY, leftDown ? state.getPrimaryColor() : state.getSecondaryColor());
+                    drawHelper.useBrush(cursorX, cursorY, leftDown ? state.primaryColor : state.secondaryColor, state.opacity);
                 }
             }
         }
@@ -100,12 +100,10 @@ public class CanvasWidget extends EditorWidget implements Renderable, MouseListe
             if (state.colorPickerActive) {
                 context.drawTexture(RenderPipelines.GUI_TEXTURED, EDITOR_TEXTURE_ID, mouseX, mouseY - 16, 16, 32, 16, 16, 64, 64, 0xFFFFFFFF);
                 context.drawTexture(RenderPipelines.GUI_TEXTURED, EDITOR_TEXTURE_ID, mouseX, mouseY - 16, 0, 32, 16, 16, 64, 64, state.primaryColor);
-
             } else {
-
                 context.drawTexture(RenderPipelines.GUI_TEXTURED, EDITOR_TEXTURE_ID, mouseX, mouseY, 16, 0, 16, 16, 64, 64, 0xFFFFFFFF);
 
-                if (state.primaryColor == 0) {
+                if (state.primaryColor == 0 || state.primaryColor == -1) {
                     context.drawTexture(RenderPipelines.GUI_TEXTURED, EDITOR_TEXTURE_ID, mouseX, mouseY, 0, 16, 16, 16, 64, 64, CrazyPainting.BLACK);
                 } else {
                     context.drawTexture(RenderPipelines.GUI_TEXTURED, EDITOR_TEXTURE_ID, mouseX, mouseY, 0, 0, 16, 16, 64, 64, state.primaryColor);

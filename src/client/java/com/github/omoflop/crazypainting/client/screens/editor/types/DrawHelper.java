@@ -18,22 +18,21 @@ public class DrawHelper {
     private final EditorState state;
     private final CanvasTexture canvasTexture;
     private final AtomicBoolean hasChanges;
-    private final Collection<Integer> colors;
 
     private Int2IntMap currentUndo;
     private int soundCooldown;
 
-    public DrawHelper(EditorState state, CanvasTexture canvasTexture, AtomicBoolean hasChanges, Collection<Integer> colors) {
+    public DrawHelper(EditorState state, CanvasTexture canvasTexture, AtomicBoolean hasChanges) {
         this.state = state;
         this.canvasTexture = canvasTexture;
         this.hasChanges = hasChanges;
-        this.colors = colors;
     }
 
-    public void useBrush(int x, int y, int color) {
+    public void useBrush(int x, int y, int baseColor, float opacity) {
         if (state.brushType == null) return;
 
-        if (!colors.contains(color)) return;
+        if (baseColor == -1) return;
+        final int color = ColorHelper.setOpacity(baseColor, opacity);
 
         state.brushType.iteratePatternCentered(x, y, (px, py, alpha) -> {
             if (!canvasTexture.isPixelInBounds(px, py)) return;
