@@ -32,7 +32,7 @@ public class DrawHelper {
         if (state.brushType == null) return;
 
         if (baseColor == -1) return;
-        final int color = ColorHelper.setOpacity(baseColor, opacity);
+        final int color = baseColor == CrazyPainting.TRANSPARENT ? baseColor : ColorHelper.setOpacity(baseColor, opacity);
 
         state.brushType.iteratePatternCentered(x, y, (px, py, alpha) -> {
             if (!canvasTexture.isPixelInBounds(px, py)) return;

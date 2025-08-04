@@ -9,10 +9,8 @@ import com.github.omoflop.crazypainting.content.CrazySounds;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.sound.SoundEvents;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.github.omoflop.crazypainting.client.screens.PaintingEditorScreen.EDITOR_TEXTURE_ID;
