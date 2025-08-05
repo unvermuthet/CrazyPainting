@@ -8,16 +8,13 @@ import com.github.omoflop.crazypainting.client.screens.editor.types.EditorState;
 import com.github.omoflop.crazypainting.client.screens.editor.types.EditorWidget;
 import com.github.omoflop.crazypainting.client.screens.editor.types.MouseListener;
 import com.github.omoflop.crazypainting.client.screens.editor.types.Renderable;
-import com.github.omoflop.crazypainting.items.PaletteItem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 
 import java.util.Collection;
-import java.util.List;
 
 import static com.github.omoflop.crazypainting.client.CrazyPaintingClient.click;
 
@@ -58,14 +55,14 @@ public class ColorPickerWidget extends EditorWidget implements Renderable, Mouse
         final int size = (int) (textRenderer.fontHeight * 1.5f);
         int y2 = bottom() - size * 2;
 
-        if (colors.contains(state.primaryColor)) {
+        if (colors.contains(state.primaryColor) || CrazyPainting.isNotVanillaColor(state.primaryColor)) {
             Text text = Text.literal(ColorHelper.hexString(state.primaryColor));
             drawColorBox(context, x, y2, width, size, CrazyPainting.LIGHT_GRAY, state.primaryColor);
             context.drawText(textRenderer, text, x + width/2 - textRenderer.getWidth(text) / 2, y2 + 3, ColorHelper.contrast(state.primaryColor), false);
 
         }
 
-        if (colors.contains(state.secondaryColor)) {
+        if (colors.contains(state.secondaryColor) || CrazyPainting.isNotVanillaColor(state.secondaryColor)) {
             y2 += size;
             Text text = Text.literal(ColorHelper.hexString(state.secondaryColor));
             drawColorBox(context, x, y2, width, size, CrazyPainting.GRAY, state.secondaryColor);

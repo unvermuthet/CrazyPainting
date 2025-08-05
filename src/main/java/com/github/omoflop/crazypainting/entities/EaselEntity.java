@@ -213,8 +213,7 @@ public class EaselEntity extends LivingEntity {
             return false;
         } else if (!this.isInvulnerableTo(world, source)) {
             if (source.isIn(DamageTypeTags.IS_EXPLOSION)) {
-                this.onBreak(world, source);
-
+                this.breakAndDropItem(world, source);
                 this.remove(RemovalReason.KILLED);
                 return false;
             } else if (source.isIn(DamageTypeTags.IGNITES_ARMOR_STANDS)) {
@@ -299,7 +298,7 @@ public class EaselEntity extends LivingEntity {
         float f = this.getHealth();
         f -= amount;
         if (f <= 0.5F) {
-            this.onBreak(world, damageSource);
+            breakAndDropItem(world, damageSource);
             this.kill(world);
         } else {
             this.setHealth(f);
@@ -319,14 +318,6 @@ public class EaselEntity extends LivingEntity {
     private void onBreak(ServerWorld world, DamageSource damageSource) {
         this.playBreakSound();
         this.drop(world, damageSource);
-
-        for(EquipmentSlot equipmentSlot : EquipmentSlot.VALUES) {
-            ItemStack itemStack = this.equipment.put(equipmentSlot, ItemStack.EMPTY);
-            if (!itemStack.isEmpty()) {
-                Block.dropStack(this.getWorld(), this.getBlockPos().up(), itemStack);
-            }
-        }
-
     }
 
     @Override

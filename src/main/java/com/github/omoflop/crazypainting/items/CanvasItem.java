@@ -2,21 +2,19 @@ package com.github.omoflop.crazypainting.items;
 
 import com.github.omoflop.crazypainting.CrazyPainting;
 import com.github.omoflop.crazypainting.Identifiable;
-import com.github.omoflop.crazypainting.components.CanvasDataComponent;
 import com.github.omoflop.crazypainting.content.CrazyComponents;
-import com.github.omoflop.crazypainting.content.CrazyEntities;
 import com.github.omoflop.crazypainting.entities.CanvasEntity;
-import com.github.omoflop.crazypainting.network.types.PaintingData;
 import com.github.omoflop.crazypainting.network.types.PaintingSize;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.SideShapeType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.EquippableComponent;
 import net.minecraft.component.type.LoreComponent;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.item.DecorationItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
@@ -24,11 +22,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
-import org.apache.commons.lang3.Validate;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.UUID;
 
 
 public class CanvasItem extends Item implements Identifiable {
@@ -65,17 +61,40 @@ public class CanvasItem extends Item implements Identifiable {
         ItemStack usageStack = context.getStack();
 
         if (CanvasItem.getCanvasId(usageStack) == -1) return ActionResult.PASS;
+        BlockState blockState = world.getBlockState(pos);
 
-        boolean mayPlace = world.getBlockState(pos).isSideSolid(world, pos, side, SideShapeType.CENTER);
-        if (!mayPlace) return ActionResult.PASS;
+        //if (tryPlaceBed(usageStack, world, pos, side, blockState)) {
+        //    context.getStack().decrementUnlessCreative(1, context.getPlayer());
+        //    return ActionResult.SUCCESS;
+        //}
+
+        if (tryPlaceSolid(usageStack, world, pos, side, blockState)) {
+            context.getStack().decrementUnlessCreative(1, context.getPlayer());
+            return ActionResult.SUCCESS;
+        }
+
+        return ActionResult.PASS;
+    }
+
+    //private boolean tryPlaceBed(ItemStack usageStack, World world, BlockPos pos, Direction side, BlockState blockState) {
+    //    if (!blockState.isIn(BlockTags.BEDS)) return false;
+    //
+    //    ItemStack stack = usageStack.copyComponentsToNewStack(usageStack.getItem(), 1);
+    //    CanvasEntity entity = CanvasEntity.create(world, stack, pos.add(side.getVector()), side);
+    //    world.spawnEntity(entity);
+    //
+    //    return true;
+    //}
+
+    private boolean tryPlaceSolid(ItemStack usageStack, World world, BlockPos pos, Direction side, BlockState blockState) {
+        if (!blockState.isSideSolid(world, pos, side, SideShapeType.CENTER)) return false;
 
         ItemStack stack = usageStack.copyComponentsToNewStack(usageStack.getItem(), 1);
-
-        CanvasEntity entity = CanvasEntity.create(world, stack, pos.add(side.getVector()), side);
+        BlockPos placePos = pos.add(side.getVector());
+        CanvasEntity entity = CanvasEntity.create(world, stack, placePos, side);
         world.spawnEntity(entity);
 
-        context.getStack().decrementUnlessCreative(1, context.getPlayer());
-        return ActionResult.SUCCESS;
+        return true;
     }
 
 

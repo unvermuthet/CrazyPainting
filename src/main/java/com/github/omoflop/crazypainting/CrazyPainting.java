@@ -69,6 +69,11 @@ public class CrazyPainting implements ModInitializer {
         LOGGER.info(s, args);
     }
 
+    public static boolean isNotVanillaColor(Integer color) {
+        if (color == null) return true;
+        return !VANILLA_COLORS.containsValue(color);
+    }
+
     @Override
     public void onInitialize() {
         CrazyNetworking.register();
