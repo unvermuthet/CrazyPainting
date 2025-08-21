@@ -12,7 +12,7 @@ import java.util.HashMap;
 
 public class CrazyPainting implements ModInitializer {
     public static final Logger LOGGER = LogManager.getLogger("CrazyPainting");
-    public static final boolean SHOW_DEBUG_LOGS = true;
+    public static final boolean SHOW_DEBUG_LOGS = false;
 
     public static final Item GLOW_ITEM = Items.GLOW_INK_SAC;
     public static final Item UNGLOW_ITEM = Items.INK_SAC;
